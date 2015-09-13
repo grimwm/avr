@@ -1,0 +1,11 @@
+--- bluetooth.cpp.org	2015-09-13 03:30:58.570136417 -0500
++++ bluetooth.cpp	2015-09-13 03:31:14.009887811 -0500
+@@ -214,7 +214,7 @@
+     get_sdp_device_info(&addr_src, &addr_dst, &req);
+ #endif
+ 
+-    if (!legacy && req.vendor == 0x054c && req.product == 0x0268) {
++    if (!legacy) {
+         if (debug) syslog(LOG_INFO, "Will initiate Sixaxis now");
+ 
+         // New proccess for sixad-sixaxis

@@ -1,3 +1,1 @@
-add_library (mylib
-  test.cc
-  )
+add_library (mylib test.cc)

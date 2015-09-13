@@ -1,8 +1,6 @@
 include_directories(../mylib)
 
-add_executable(blink_led
-  blink.c
-  )
+add_executable(blink_led blink.c)
 target_link_libraries(blink_led mylib)
 
 
