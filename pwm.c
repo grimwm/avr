@@ -25,28 +25,51 @@ void timerinit(void) {
   ICR1 = us_clocks(10000, cs);
 
   // Set PWM duty cycle to 1500us.
-  OCR1A = OCR1B = us_clocks(500, cs);
+  OCR1A = OCR1B = us_clocks(750, cs);
   
   sei();
 }
 
+const unsigned PWM_RANGE_MICROSECONDS[2] = {
+  500,                          /* MIN */
+  1000,                         /* MAX */
+};
+
+int lte(int a, int b) {
+  return a <= b;
+}
+
+int gte(int a, int b) {
+  return a >= b;
+}
+
+typedef int (*LessThanEqual)(int,int);
+
 int main (void) {
   timerinit();
-  
-  /* loop forever, the interrupts are doing the rest */
-  /* volatile unsigned *a = &OCRA; */
-  /* volatile unsigned int *b = &OCRB; */
-  for (;;) {
-  /*   sleep_mode(); // sleep until we're awoken by an interrupt */
-    /* for (int us = 0; us < 1500; ++us) { */
-    /*   _delay_ms(1); */
-    /*   *a = us_clocks(1500 - us); */
-    /*   *b = us_clocks(us); */
-    /* } */
 
-    /* volatile unsigned *t = a; */
-    /* a = b; */
-    /* b = t; */
+  unsigned m1 = PWM_RANGE_MICROSECONDS[0];
+  unsigned m2 = PWM_RANGE_MICROSECONDS[1];
+  
+  LessThanEqual cmpa = &lte;
+  LessThanEqual cmpb = &gte;
+
+  for (int increment=1, us=m1; ; increment *= -1) {
+  /*   sleep_mode(); // sleep until we're awoken by an interrupt */
+
+    for (; cmpa(us, m2); us += increment) {
+      _delay_ms(1);
+      OCR1A = us_clocks(m1 + m2 - us, cs);
+      OCR1B = us_clocks(us, cs);
+    }
+
+    LessThanEqual cmpt = cmpa;
+    cmpa = cmpb;
+    cmpb = cmpt;
+
+    m1 ^= m2;
+    m2 ^= m1;
+    m1 ^= m2;
   }
   return (0);
 }

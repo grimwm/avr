@@ -1,3 +1,4 @@
+/* -*- mode: c -*- */
 /**
 Also, the port and pin mapping of the output compare match 1A (or 1 for older devices) pin which is
 used to drive the PWM varies between different AVRs.  This file tries to abstract between all these
@@ -12,7 +13,7 @@ symbolic names. The macros defined by that file are:
    phase and frequency correct PWM mode
  - TIMER1_CLOCKSOURCE the clock bits to set in the respective control register to start the PWM timer; usually the
    timer runs at full CPU clock for 10-bit PWMs, while it runs on a prescaled clock for 8-bit PWMs
-*/
+**/
 
 #pragma once
 
@@ -28,20 +29,60 @@ typedef enum {
   WGM_PHASE_AND_FREQUENCE_CORRECT_PWM,
 } WaveGenerationMode;
 
+unsigned WaveGenerationModeSettings[][2] = {
+  {                             /* WGM_CTC */
+    0,
+    _BV(WGM13) | _BV(WGM12)
+  },
+  {                             /* WGM_FAST_PWM */
+    _BV(WGM11),
+    _BV(WGM13) | _BV(WGM12)
+  },
+  {                             /* WGM_PHASE_CORRECT_PWM */
+    _BV(WGM11),
+    _BV(WGM13)
+  },
+  {                             /* WGM_PHASE_AND_FREQUENCE_CORRECT_PWM */
+    _BV(WGM10),
+    _BV(WGM13)
+  },
+};
+
 /**
  * Per table 16-5, this is F_CPU / 8 (prescaling).
  */
 typedef enum {
-  CS_Prescaled_1 = 0,
+  CS_Disabled,
+  CS_Prescaled_1,
   CS_Prescaled_8,
   CS_Prescaled_64,
   CS_Prescaled_256,
   CS_Prescaled_1024,
-  
-  CS_Disabled,
   CS_XTAL_Falling,
   CS_XTAL_Rising,
 } ClockSource;
+
+unsigned ClockSourceSettings[] = {
+  0,                                 /* CS_Disabled */
+  _BV(CS10),                         /* CS_Prescaled_1 */
+  _BV(CS11),                         /* CS_Prescaled_8 */
+  _BV(CS11) | _BV(CS10),             /* CS_Prescaled_64 */
+  _BV(CS12),                         /* CS_Prescaled_256 */
+  _BV(CS12) | _BV(CS10),             /* CS_Prescaled_1024 */
+  _BV(CS12) | _BV(CS11),             /* CS_XTAL_Falling */
+  _BV(CS12) | _BV(CS11) | _BV(CS10), /* CS_XTAL_Rising */
+};
+
+unsigned ClockSourceShift[] = {
+  0,                            /* CS_Disabled */
+  0,                            /* CS_Prescaled_1 */
+  1,                            /* CS_Prescaled_8 */
+  2,                            /* CS_Prescaled_64 */
+  3,                            /* CS_Prescaled_256 */
+  4,                            /* CS_Prescaled_1024 */
+  0,                            /* CS_XTAL_Falling */
+  0,                            /* CS_XTAL_Rising */
+};
 
 /**
  * Per table 16-2, set OC1A/B on compare match when up-counting and clear
@@ -72,6 +113,13 @@ typedef enum {
   OC_INVERTING,
 } OutputCompareMode;
 
+unsigned OutputCompareModeSettings[] = {
+  0,                            /* OC_DISCONNECTED */
+  _BV(COM1A0) | _BV(COM1B0),    /* OC_TOGGLE */
+  _BV(COM1A1) | _BV(COM1B1),    /* OC_NON_INVERTING */
+  _BV(COM1A1) | _BV(COM1A0) | _BV(COM1B1) | _BV(COM1B0), /* OC_INVERTING */
+};
+
 // Data direction register managing output compare pins.
 #define DDROC DDRB
 
@@ -85,74 +133,19 @@ typedef enum {
  */
 static inline void wgm1(WaveGenerationMode mode) {
   TCCR1A &= 0xFF ^ (_BV(WGM11) | _BV(WGM10));
+  TCCR1A |= WaveGenerationModeSettings[mode][0];
   TCCR1B &= 0xFF ^ (_BV(WGM13) | _BV(WGM12));
-  
-  switch (mode) {
-  case WGM_CTC:
-    TCCR1B |= _BV(WGM13) | _BV(WGM12);
-    break;
-  case WGM_FAST_PWM:
-    TCCR1A |= _BV(WGM11);
-    TCCR1B |= _BV(WGM13) | _BV(WGM12);
-    break;
-  case WGM_PHASE_CORRECT_PWM:
-    TCCR1A |= _BV(WGM11);
-    TCCR1B |= _BV(WGM13);
-    break;
-  case WGM_PHASE_AND_FREQUENCE_CORRECT_PWM:
-    TCCR1A |= _BV(WGM10);
-    TCCR1B |= _BV(WGM13);
-    break;
-  }
+  TCCR1B |= WaveGenerationModeSettings[mode][1];
 }
 
 static inline void cs1(ClockSource cs) {
   TCCR1B &= 0xFF ^ (_BV(CS12) | _BV(CS11) | _BV(CS10));
-
-  switch (cs) {
-  case CS_Disabled:
-    // First line already does a clear.
-    break;
-  case CS_Prescaled_1:
-    TCCR1B |= _BV(CS10);
-    break;
-  case CS_Prescaled_8:
-    TCCR1B |= _BV(CS11);
-    break;
-  case CS_Prescaled_64:
-    TCCR1B |= _BV(CS11) | _BV(CS10);
-    break;
-  case CS_Prescaled_256:
-    TCCR1B |= _BV(CS12);
-    break;
-  case CS_Prescaled_1024:
-    TCCR1B |= _BV(CS12) | _BV(CS10);
-    break;
-  case CS_XTAL_Falling:
-    TCCR1B |= _BV(CS12) | _BV(CS11);
-    break;
-  case CS_XTAL_Rising:
-    TCCR1B |= _BV(CS12) | _BV(CS11) | _BV(CS10);
-    break;
-  }
+  TCCR1B |= ClockSourceSettings[cs];
 }
 
 static inline void oc1(OutputCompareMode com) {
   TCCR1A &= 0xFF ^ (_BV(COM1A1) | _BV(COM1A0) | _BV(COM1B1) | _BV(COM1B0));
-
-  switch (com) {
-  case OC_DISCONNECTED:
-    break;
-  case OC_TOGGLE:
-    TCCR1A |= _BV(COM1A0) | _BV(COM1B0);
-    break;
-  case OC_NON_INVERTING:
-    TCCR1A |= _BV(COM1A1) | _BV(COM1B1);
-    break;
-  case OC_INVERTING:
-    TCCR1A |= _BV(COM1A1) | _BV(COM1A0) | _BV(COM1B1) | _BV(COM1B0);
-    break;
-  }
+  TCCR1A |= OutputCompareModeSettings[com];
 }
 
 #define MHZ 1000000
@@ -168,5 +161,5 @@ static inline int us_clocks(int us, ClockSource cs) {
     return -1;
   }
 
-  return clocks << cs;
+  return clocks << ClockSourceShift[cs];
 }
