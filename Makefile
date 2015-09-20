@@ -1,4 +1,5 @@
 MCU=atmega88
+F_CPU=8000000
 
 CC=avr-gcc
 CFLAGS=-g -Os -std=c99 -Wall -mcall-prologues -mmcu=$(MCU)
@@ -13,7 +14,7 @@ TARGET=pwm
 
 .PHONY: all
 all:
-	$(CC) $(CFLAGS) $(TARGET).c -o $(TARGET)
+	$(CC) $(CFLAGS) $(TARGET).c -o $(TARGET) -Ilib -DF_CPU=$(F_CPU)
 	$(OBJ2HEX) -R .eeprom -O ihex $(TARGET) $(TARGET).hex
 	rm -f $(TARGET)
 

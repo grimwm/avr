@@ -1,12 +1,12 @@
-include_directories(../mylib)
+include_directories(../lib)
 
 add_executable(blink_led blink.c)
-target_link_libraries(blink_led mylib)
+target_link_libraries(blink_led lib)
 
 
 if(AVR)
-add_custom_command(TARGET blink_led
-  POST_BUILD
-  COMMAND ${CMAKE_OBJCOPY} -O ihex -R eeprom blink_led blink_led.hex
-  )
+  add_custom_command(TARGET blink_led
+    POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} -O ihex -R eeprom blink_led blink_led.hex
+    )
 endif(AVR)

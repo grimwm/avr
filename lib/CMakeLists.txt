@@ -1,1 +1,1 @@
-add_library (mylib pwm.c)
+add_library (lib version.cc)

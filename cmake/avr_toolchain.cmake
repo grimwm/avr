@@ -10,23 +10,21 @@ set(CMAKE_NM avr-nm CACHE STRING "")
 
 set(AVR ON CACHE BOOL "")
 
-if(AVR_TARGET STREQUAL "avr")
-  if(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    set(CDEBUG "-gstabs")
-  endif()
-  
-  set(CWARN "-Wall -Wstrict-prototypes -Werror")
-  set(CXXWARN "-Wall -Wstrict-prototypes -Werror")
-  set(CTUNING "-funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums")
-  set(COPT "-Os")
-
-  set(
-    CMAKE_C_FLAGS
-    "${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
-    CACHE STRING "")# FORCE)
-  
-  set(
-    CMAKE_CXX_FLAGS
-    "${CDEBUG} ${COPT} ${CXXWARN} ${CXXFLAGS}"
-    CACHE STRING "")# FORCE)
+if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+  set(CDEBUG "-gstabs")
 endif()
+
+set(CWARN "-Wall -Wstrict-prototypes -Werror")
+set(CXXWARN "-Wall -Wstrict-prototypes -Werror")
+set(CTUNING "-funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums")
+set(COPT "-Os")
+
+set(
+  CMAKE_C_FLAGS
+  "-mmcu=${MCU} -DF_CPU=${F_CPU} ${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
+  CACHE STRING "")# FORCE)
+
+set(
+  CMAKE_CXX_FLAGS
+  "-mmcu=${MCU} -DF_CPU=${F_CPU} ${CDEBUG} ${COPT} ${CXXWARN} ${CXXFLAGS}"
+  CACHE STRING "")# FORCE)
