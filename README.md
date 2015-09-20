@@ -6,10 +6,12 @@ Please note that right now, this code is very crude and is currently covered und
 
 Usage
 -----
-./configure avr -mcu <mcu_type> -fcpu <hz>
-cd build
-make
-make install (currently assumes you're using linuxgpio and have set everything up properly in /etc/avrdude.conf)
+    ./configure avr -mcu <mcu_type> -fcpu <hz>
+    cd build
+    make
+
+    # currently assumes you're using linuxgpio and have set everything up properly in /etc/avrdude.conf
+    make install
 
 Example:
-./configure avr -mcu atmega88 -fcpu 8000000
+    ./configure avr -mcu atmega88 -fcpu 8000000
