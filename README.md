@@ -15,3 +15,5 @@ Usage
 
 Example:
     ./configure avr -mcu atmega88 -fcpu 8000000
+    cd build
+    make all install
