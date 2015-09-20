@@ -10,9 +10,7 @@ set(CMAKE_NM avr-nm CACHE STRING "")
 
 set(AVR ON CACHE BOOL "")
 
-if(AVR_TARGET STREQUAL "arduino")
-  set(ARDUINO ON)
-  
+if(AVR_TARGET STREQUAL "avr")
   if(CMAKE_BUILD_TYPE MATCHES DEBUG)
     set(CDEBUG "-gstabs")
   endif()
@@ -21,17 +19,14 @@ if(AVR_TARGET STREQUAL "arduino")
   set(CXXWARN "-Wall -Wstrict-prototypes -Werror")
   set(CTUNING "-funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums")
   set(COPT "-Os")
-  set(CMCU "-mmcu=atmega168")
 
-  add_definitions(-DF_CPU=16000000)
-  
   set(
     CMAKE_C_FLAGS
-    "${CMCU} ${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
+    "${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
     CACHE STRING "")# FORCE)
   
   set(
     CMAKE_CXX_FLAGS
-    "${CMCU} ${CDEBUG} ${COPT} ${CXXWARN} ${CXXFLAGS}"
+    "${CDEBUG} ${COPT} ${CXXWARN} ${CXXFLAGS}"
     CACHE STRING "")# FORCE)
 endif()

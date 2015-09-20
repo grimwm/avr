@@ -1,3 +1,5 @@
-*.hex
 *.pro
 *.user
+
+build/
+*.hex

@@ -7,7 +7,7 @@ extern "C"
 
 #define TESTLIB_VERSION 1
 
-int testlib_version(void);
+int libversion(void);
 
 #ifdef __cplusplus
 } // extern "C"

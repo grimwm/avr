@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 
-Project(Arduino)
+Project(AVR)
 
 add_subdirectory(blink_led)
-add_subdirectory(mylib)
+add_subdirectory(libpwm)
+
+add_executable(pwm pwm.c)
