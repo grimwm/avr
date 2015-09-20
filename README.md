@@ -2,6 +2,14 @@ This code supports AVR MCUs utilizing avr-libc by providing libraries additional
 
 It is worth noting that at the moment, items not related directly to the AVR are mostly targeted at Raspberry Pi use.  They will work on other machines, but some of the scripts may need to be modified.  I hope to change that after things solidify more.
 
-Also, I have a skeleton for CMake usage, but in the interest of times saving and focusing on the core code, I have opted for a very simple Makefile.  I will switch over to CMake after everthing is code complete, and this should make porting and extending efforts easier.
-
 Please note that right now, this code is very crude and is currently covered under the GPLv2.0 license (see LICENSE for details).  I will likely put certain portions of it (even some existing code) under the LGPL or BSD license in the future, but not yet.
+
+Usage
+-----
+./configure avr -mcu <mcu_type> -fcpu <hz>
+cd build
+make
+make install (currently assumes you're using linuxgpio and have set everything up properly in /etc/avrdude.conf)
+
+Example:
+./configure avr -mcu atmega88 -fcpu 8000000
