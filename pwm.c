@@ -1,5 +1,3 @@
-/* #define F_CPU 8000000UL */
-
 #include <inttypes.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
