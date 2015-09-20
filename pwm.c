@@ -1,75 +1,64 @@
 #include <inttypes.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/sleep.h>
 #include <util/delay.h>
 
 #include "pwm.h"
 
-static ClockSource cs = CS_Prescaled_8;
-static WaveGenerationMode wgm = WGM_PHASE_CORRECT_PWM;
-static OutputCompareMode com = OC_NON_INVERTING;
+#define PWM_MIN_US 500
+#define PWM_MAX_US 1000
+
+static inline unsigned usc(unsigned us) {
+  return us_clocks(us, Prescaled_8);
+}
 
 /**
  * This routine gets called after a reset. It initializes the PWM and enables interrupts.
  **/
 void timerinit(void) {
-  cs1(cs);
-  wgm1(wgm);
-  oc1(com);
+  cs1(Prescaled_8);
+  wgm1(PhaseCorrectPWM);
+  oc1(NonInverting);
 
-  // Enable OC1 as output.
-  DDROC = _BV(OC1) | _BV(OC2);
+  OC1_ENABLE(OC1A | OC1B);
 
   // Set top of counter to 1500us, setting a period of 20000us = 50 Hz.
-  ICR1 = us_clocks(10000, cs);
+  ICR1 = usc(10000);
 
   // Set PWM duty cycle to 1500us.
-  OCR1A = OCR1B = us_clocks(750, cs);
-  
+  OCR1A = OCR1B = usc(750);
+
   sei();
 }
 
-const unsigned PWM_RANGE_MICROSECONDS[2] = {
-  500,                          /* MIN */
-  1000,                         /* MAX */
-};
-
-int lte(int a, int b) {
+static inline unsigned lte(unsigned a, unsigned b) {
   return a <= b;
 }
 
-int gte(int a, int b) {
-  return a >= b;
+static inline void setOC(unsigned m1, unsigned m2, unsigned us) {
+  OCR1A = usc(m1 + m2 - us);
+  OCR1B = usc(us);
 }
-
-typedef int (*LessThanEqual)(int,int);
 
 int main (void) {
   timerinit();
 
-  unsigned m1 = PWM_RANGE_MICROSECONDS[0];
-  unsigned m2 = PWM_RANGE_MICROSECONDS[1];
-  
-  LessThanEqual cmpa = &lte;
-  LessThanEqual cmpb = &gte;
+  unsigned m1 = PWM_MIN_US;
+  unsigned m2 = PWM_MAX_US;
 
-  for (int increment=1, us=m1; ; increment *= -1) {
+  for (;;) {
   /*   sleep_mode(); // sleep until we're awoken by an interrupt */
 
-    for (; cmpa(us, m2); us += increment) {
+    for (unsigned us=m1; lte(us, m2); ++us) {
       _delay_ms(1);
-      OCR1A = us_clocks(m1 + m2 - us, cs);
-      OCR1B = us_clocks(us, cs);
+      setOC(m1, m2, us);
     }
 
-    LessThanEqual cmpt = cmpa;
-    cmpa = cmpb;
-    cmpb = cmpt;
-
-    m1 ^= m2;
-    m2 ^= m1;
-    m1 ^= m2;
+    for (unsigned us=m2; lte(m1, us); --us) {
+      _delay_ms(1);
+      setOC(m1, m2, us);
+    }
   }
-  return (0);
+
+  return 0;
 }

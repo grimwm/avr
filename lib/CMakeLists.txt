@@ -1,1 +1,1 @@
-add_library (lib version.cc)
+#add_library (lib version.cc)
