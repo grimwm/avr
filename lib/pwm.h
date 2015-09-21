@@ -1,6 +1,3 @@
-#pragma once
-/* -*- mode: c -*- */
-
 /**
  * This file does its best to help you setup a 16-bit PWM using ICR1 as TOP.  Currently, the other 8-bit PWMs are
  * not supported, but they should be.  The work of setting up the PWMs is left mainly to three functions:
@@ -11,11 +8,15 @@
  * Since this is a 16-bit timer/counter with 10=bit resolution, you may use ICR1 ranges between 0x0000 and 0x03FF.
 **/
 
+#pragma once
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <math.h>
+
+#include "clock.h"
 
 // Output compare pins
 #define OC1A _BV(PB1)
@@ -66,19 +67,6 @@ extern "C" {
 #define oc1_Toggle() oc1_Disconnected() | _BV(COM1A0) | _BV(COM1B0)
 #define oc1_NonInverting() oc1_Disconnected() | _BV(COM1A1) | _BV(COM1B1)
 #define oc1_Invertibg() oc1_Disconnected() | _BV(COM1A1) | _BV(COM1A0) | _BV(COM1B1) | _BV(COM1B0)
-
-#define MHZ 1000000U
-#if F_CPU < MHZ
-#  error F_CPU must be >= 1000000
-#endif
-
-// Computation for a single microsecond, rounded down to nearest clock.
-#define us_clocks(us, cs) ((us) * MHZ / F_CPU) << us_clocks_ ## cs
-#define us_clocks_Prescaled_1 0
-#define us_clocks_Prescaled_8 3
-#define us_clocks_Prescaled_64 5
-#define us_clocks_Prescaled_256 8
-#define us_clocks_Prescaled_1024 10
 
 #ifdef __cplusplus
 } // extern "C"
