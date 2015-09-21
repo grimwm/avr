@@ -19,7 +19,7 @@ extern "C" {
  * Don't forget to call sei() if you want interrupts.
  */
 void spi_init_master(int use_interrupts) {
-  DDRB = _BV(MOSI) | _BV(SCK);
+  DDRB |= _BV(MOSI) | _BV(SCK);
  
   // Enable SPI, Set as Master
   // Prescaler: Fosc/16
@@ -34,7 +34,7 @@ void spi_init_master(int use_interrupts) {
  * Don't forget to call sei() if you want interrupts.
  */
 void spi_init_slave(int use_interrupts) {
-  DDRB = _BV(MISO);
+  DDRB |= _BV(MISO);
   
   SPCR = _BV(SPE);
   if (use_interrupts) {

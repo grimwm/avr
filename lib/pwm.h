@@ -21,9 +21,11 @@ extern "C" {
 // Output compare pins
 #define OC1A _BV(PB1)
 #define OC1B _BV(PB2)
-#define OC1_ENABLE(pins) DDRB |= pins
-#define OC1_DISABLE(pins) DDRB &= 0xFF ^ pins
-#define OC1_TOGGLE(pins) DDRB ^= pins
+
+// Convenience methods to setup pins.
+#define OC1_ENABLE(pins) DDRB |= (pins)
+#define OC1_DISABLE(pins) DDRB &= ~(pins)
+#define OC1_TOGGLE(pins) DDRB ^= (pins)
 
 /**
  * Per table 16-4, set waveform generation to phase correct with ICR1 as TOP.

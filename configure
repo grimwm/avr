@@ -17,7 +17,7 @@ def setup_target_avr_parser(parsers):
     parser.add_argument("-mcu", required=True, help="AVR MCU model (ex. -mcu=atmega88)")
 
 def build_cmake_command(args, this_path):
-    cmake_cmd = ["cmake", "-E chdir %s" % build_path]
+    cmake_cmd = ["cmake"]
     if args.verbose:
         cmake_cmd.append("--debug-output")
     
@@ -27,6 +27,10 @@ def build_cmake_command(args, this_path):
             os.path.join(this_path, "cmake", "avr_toolchain.cmake"))
         cmake_cmd.append("-DF_CPU=%d" % args.fcpu)
         cmake_cmd.append("-DMCU=%s" % args.mcu)
+    elif 'default' == args.target_platform:
+        cmake_cmd.append(
+            "-DCMAKE_TOOLCHAIN_FILE=%s" %\
+            os.path.join(this_path, "cmake", "default_toolchain.cmake"))
 
     cmake_cmd.extend(["-G", "Unix Makefiles"])
     cmake_cmd.append(src_path)
@@ -34,10 +38,10 @@ def build_cmake_command(args, this_path):
 
 this_path = os.path.dirname(sys.argv[0])
 src_path = os.path.join(os.getcwd(), this_path)
-build_path = os.path.join(src_path, 'build')
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--verbose", "-v", action="store_true")
+parser.add_argument('--build-dir', '-b', default='build', help='Where the build will be created.')
 
 target_parsers = parser.add_subparsers(help="Target platform")
 setup_target_avr_parser(target_parsers)
@@ -47,13 +51,12 @@ args = parser.parse_args()
 if args.verbose:
     print args
 
-if not os.path.exists(build_path):
-    os.mkdir(build_path)
+if not os.path.exists(args.build_dir):
+    os.mkdir(args.build_dir)
 
 cmake_cmd = build_cmake_command(args, this_path)
 if args.verbose:
     print " ".join(cmake_cmd)
 
-os.chdir(build_path)
+os.chdir(args.build_dir)
 check_call(cmake_cmd)
-
