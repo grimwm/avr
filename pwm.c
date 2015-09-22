@@ -8,10 +8,15 @@
 
 #define ACK 0x7E
 
+ISR(TIMER0_OVF_vect) {
+}
+
+ISR(TIMER0_COMPA_vect) {
+}
+
 int main (void) {
   servo_init(OC1A | OC1B);
-  spi_init_master(0);
-  /* spi_init_slave(0); */
+  spi_init_slave(0);
   sei();
 
   /* unsigned char degrees = 90; */
