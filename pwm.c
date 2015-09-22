@@ -8,14 +8,31 @@
 
 #define ACK 0x7E
 
+// These servo ISRs will be moved into servo.h, hidden behind a
+// macro definition.
+extern volatile int8_t x200us;
+volatile int8_t x200us;
+/**
+ * Set this up with the assumption we have a TOP of 200,
+ * with each tick counting as 1us.  So, when this has executed
+ * exactly 100 times, it will have been 100*200us = 20ms or 50 Hz,
+ * enough for a servo signal period.
+ */
 ISR(TIMER0_OVF_vect) {
+  ++x200us;
+  if (100 == x200us) { // clock-cycle efficient
+    x200us = 0;
+  }
 }
 
 ISR(TIMER0_COMPA_vect) {
 }
 
+ISR(TIMER0_COMPB_vect) {
+}
+
 int main (void) {
-  servo_init(OC1A | OC1B);
+  servo0_init(OC1A | OC1B);
   spi_init_slave(0);
   sei();
 

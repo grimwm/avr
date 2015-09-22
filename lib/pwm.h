@@ -48,7 +48,7 @@ extern "C" {
  *
  * wgm1 functions have their masks taken from table 16-4.  In all the modes
  * available here, ICR1 acts as TOP.
- * 
+ *
  * Setup 16-bit timer/counter's wave generation mode.
  * No matter what WGM mode is selected, ICR will act as TOP.
  */
@@ -80,6 +80,7 @@ extern "C" {
   wgm1_clearA() | _BV(WGM10); \
   wgm1_clearB() | _BV(WGM13);
 
+#define cs0(mode) cs0_ ## mode()
 #define cs1(mode) cs1_ ## mode()
 #define cs1_clear() TCCR1B = (TCCR1B & ~(_BV(CS12) | _BV(CS11) | _BV(CS10)))
 #define cs1_Disabled() cs1_clear()
