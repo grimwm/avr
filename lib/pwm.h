@@ -81,6 +81,16 @@ extern "C" {
   wgm1_clearB() | _BV(WGM13);
 
 #define cs0(mode) cs0_ ## mode()
+#define cs0_clear() TCCR0B = (TCCR0B & ~(_BV(CS02) | _BV(CS01) | _BV(CS00)))
+#define cs0_Disabled cs0_clear()
+#define cs0_Prescaled_1() cs0_clear() | _BV(CS00)
+#define cs0_Prescaled_8() cs0_clear() | _BV(CS01)
+#define cs0_Prescaled_64() cs0_clear() | _BV(CS01) | _BV(CS00)
+#define cs0_Prescaled_256() cs0_clear() | _BV(CS02)
+#define cs0_Prescaled_1024() cs0_clear() | _BV(CS02) | _BV(CS00)
+#define cs0_XTAL_Falling() cs0_clear() | _BV(CS02) | _BV(CS01)
+#define cs0_XTAL_Rising() cs0_clear() | _BV(CS02) | _BV(CS01) | _BV(CS00)
+
 #define cs1(mode) cs1_ ## mode()
 #define cs1_clear() TCCR1B = (TCCR1B & ~(_BV(CS12) | _BV(CS11) | _BV(CS10)))
 #define cs1_Disabled() cs1_clear()
@@ -91,6 +101,12 @@ extern "C" {
 #define cs1_Prescaled_1024() cs1_clear() | _BV(CS12) | _BV(CS10)
 #define cs1_XTAL_Falling() cs1_clear() | _BV(CS12) | _BV(CS11)
 #define cs1_XTAL_Rising() cs1_clear() | _BV(CS12) | _BV(CS11) | _BV(CS10)
+
+#define oc0(mode) oc0_ ## mode()
+#define oc0_Disconnected() TCCR0A = (TCCR0A & ~(_BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) | _BV(COM0B0)))
+#define oc0_Toggle() oc0_Disconnected() | _BV(COM0A0) | _BV(COM0B0)
+#define oc0_NonInverting() oc0_Disconnected() | _BV(COM0A1) | _BV(COM0B1)
+#define oc0_Inverting() oc0_Disconnected() | _BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) | _BV(COM0B0)
 
 /**
  * Per table 16-2, set OC1A/B on compare match when up-counting and clear

@@ -22,6 +22,27 @@ static inline void servo(unsigned degrees, volatile uint16_t* pin) {
  * Servos will be set to 90 degrees.
  * Don't forget to call sei() after you initialize hardware!
  */
+static inline void servo0_init(unsigned out_pins) {
+  cs0(Prescaled_8);
+  wgm0(FastPWM);
+  oc0(NonInverting);
+
+  oc0_enable(out_pins);
+
+  // Set top of counter to 200us.  Combined with clever ISRs, this
+  // can easily be used to line up with 20ms = 50 Hz.
+  OCR0A = us_clocks(200, Prescaled_8);
+
+  // Set servos to 90 degrees.
+//  servo(90, &OCR1A);
+//  servo(90, &OCR1B);
+}
+
+/**
+ * Assume 50 Hz (20 ms) initialization.
+ * Servos will be set to 90 degrees.
+ * Don't forget to call sei() after you initialize hardware!
+ */
 static inline void servo1_init(unsigned out_pins) {
   cs1(Prescaled_8);
   wgm1(PhaseCorrectPWM);
@@ -37,21 +58,13 @@ static inline void servo1_init(unsigned out_pins) {
   servo(90, &OCR1B);
 }
 
-static inline void servo0_init(unsigned out_pins) {
-  cs0(Prescaled_8);
-  wgm0(FastPWM);
-  oc1(NonInverting);
-
-  oc1_enable(out_pins);
-
-  // Set top of counter to 200us.  Combined with clever ISRs, this
-  // can easily be used to line up with 20ms = 50 Hz.
-  OCR0A = us_clocks(200, Prescaled_8);
-
-  // Set servos to 90 degrees.
-//  servo(90, &OCR1A);
-//  servo(90, &OCR1B);
-}
+/**
+ * Install a set of ISRs for managing 50 Hz servo signals at the proper
+ * duty cycles.  use the associated non-ISR methods to set the
+ * appropriate registers for the desired duty cycles.
+ */
+#ifdef INSTALL_SERVO0_ISRS
+#endif // INSTALL_SERVO0_ISRS
 
 #ifdef __cplusplus
 } // extern "C"
