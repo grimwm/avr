@@ -16,8 +16,13 @@
 static inline void uart_enable(void) {
   UBRR0H = BAUDRATE >> 8;
   UBRR0L = BAUDRATE;
+
+  // Set RX/TN enabled
   UCSR0B |= _BV(TXEN0) | _BV(RXEN0);
-  UCSR0C |= _BV(UMSEL00) | _BV(UCSZ01) | _BV(UCSZ00);
+
+  // Set asynchronous USART
+  // Set frame format: 8-bit data, 2-stop bit
+  UCSR0C |= _BV(USBS0) | _BV(UCSZ01) | _BV(UCSZ00);
 }
 
 static inline void uart_transmit(unsigned char data) {
