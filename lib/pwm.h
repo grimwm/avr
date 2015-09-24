@@ -23,8 +23,6 @@ extern "C" {
 #include "clock.h"
 
 // Output compare pins
-#define OC0A _BV(PD6)
-#define OC0B _BV(PD5)
 #define OC1A _BV(PB1)
 #define OC1B _BV(PB2)
 
@@ -33,19 +31,11 @@ extern "C" {
 #define oc_disable(ddr, pins) ddr &= ~(pins)
 #define oc_toggle(ddr, pins) ddr ^= (pins)
 
-#define oc0_enable(pins) oc_enable(DDRD, pins)
-#define oc0_disable(pins) oc_disable(DDRD, pins)
-#define oc0_toggle(pins) oc_toggle(DDRD, pins)
-
 #define oc1_enable(pins) oc_enable(DDRB, pins)
 #define oc1_disable(pins) oc_disable(DDRB, pins)
 #define oc1_toggle(pins) oc_toggle(DDRB, pins)
 
 /**
- * wgm0 functions have their masks taken from table 15-8.  In all the modes
- * available here, OCR0A acts as TOP, meaning ISRs will be needed to handle
- * functioning of the PWM.
- *
  * wgm1 functions have their masks taken from table 16-4.  In all the modes
  * available here, ICR1 acts as TOP.
  *
@@ -54,17 +44,6 @@ extern "C" {
  */
 #define wgm0(mode) wgm0_ ## mode()
 #define wgm1(mode) wgm1_ ## mode()
-#define wgm0_clearA() TCCR0A = (TCCR0A & ~(_BV(WGM01) | _BV(WGM00)))
-#define wgm0_clearB() TCCR0B = (TCCR0B & ~(_BV(WGM02)))
-#define wgm0_CTC() \
-  wgm0_clearA() | _BV(WGM01); \
-  wgm0_clearB();
-#define wgm0_FastPWM() \
-  wgm0_clearA() | _BV(WGM01) | _BV(WGM00); \
-  wgm1_clearB() | _BV(WGM02);
-#define wgm0_PhaseCorrectPWM() \
-  wgm0_clearA() | _BV(WGM00); \
-  wgm0_clearB() | _BV(WGM02);
 #define wgm1_clearA() TCCR1A = (TCCR1A & ~(_BV(WGM11) | _BV(WGM10)))
 #define wgm1_clearB() TCCR1B = (TCCR1B & ~(_BV(WGM13) | _BV(WGM12)))
 #define wgm1_CTC() \
@@ -80,17 +59,6 @@ extern "C" {
   wgm1_clearA() | _BV(WGM10); \
   wgm1_clearB() | _BV(WGM13);
 
-#define cs0(mode) cs0_ ## mode()
-#define cs0_clear() TCCR0B = (TCCR0B & ~(_BV(CS02) | _BV(CS01) | _BV(CS00)))
-#define cs0_Disabled cs0_clear()
-#define cs0_Prescaled_1() cs0_clear() | _BV(CS00)
-#define cs0_Prescaled_8() cs0_clear() | _BV(CS01)
-#define cs0_Prescaled_64() cs0_clear() | _BV(CS01) | _BV(CS00)
-#define cs0_Prescaled_256() cs0_clear() | _BV(CS02)
-#define cs0_Prescaled_1024() cs0_clear() | _BV(CS02) | _BV(CS00)
-#define cs0_XTAL_Falling() cs0_clear() | _BV(CS02) | _BV(CS01)
-#define cs0_XTAL_Rising() cs0_clear() | _BV(CS02) | _BV(CS01) | _BV(CS00)
-
 #define cs1(mode) cs1_ ## mode()
 #define cs1_clear() TCCR1B = (TCCR1B & ~(_BV(CS12) | _BV(CS11) | _BV(CS10)))
 #define cs1_Disabled() cs1_clear()
@@ -101,12 +69,6 @@ extern "C" {
 #define cs1_Prescaled_1024() cs1_clear() | _BV(CS12) | _BV(CS10)
 #define cs1_XTAL_Falling() cs1_clear() | _BV(CS12) | _BV(CS11)
 #define cs1_XTAL_Rising() cs1_clear() | _BV(CS12) | _BV(CS11) | _BV(CS10)
-
-#define oc0(mode) oc0_ ## mode()
-#define oc0_Disconnected() TCCR0A = (TCCR0A & ~(_BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) | _BV(COM0B0)))
-#define oc0_Toggle() oc0_Disconnected() | _BV(COM0A0) | _BV(COM0B0)
-#define oc0_NonInverting() oc0_Disconnected() | _BV(COM0A1) | _BV(COM0B1)
-#define oc0_Inverting() oc0_Disconnected() | _BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) | _BV(COM0B0)
 
 /**
  * Per table 16-2, set OC1A/B on compare match when up-counting and clear
