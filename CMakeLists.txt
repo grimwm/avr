@@ -18,8 +18,14 @@ add_custom_target(projfiles_extra SOURCES
 
 include_directories(lib)
 if(AVR)
+  add_avr_fuse_target()
+
   add_executable(pwm pwm.c)
   add_avr_to_target(pwm)
+
+  add_executable(uart_echo uart_echo.c)
+  add_avr_to_target(uart_echo)
+
   add_definitions(-DBAUD=9600)
 else(AVR)
   add_executable(master master.c)

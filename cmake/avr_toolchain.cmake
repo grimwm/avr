@@ -38,13 +38,15 @@ macro(add_avr_to_target target_name)
     POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O ihex -R .eeprom ${target_name} ${target_name}.hex)
 
-  add_custom_target(install
+  add_custom_target(install_${target_name}
     COMMAND ${AVRDUDE} -p ${MCU} -c linuxgpio -U flash:w:${target_name}.hex
     DEPENDS ${target_name})
-
-  add_custom_target(fuse
-    COMMAND ${AVRDUDE} -p ${MCU} -c linuxgpio ${FUSE})
 
   set_directory_properties(PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
     ${target_name}.hex)
 endmacro(add_avr_to_target)
+
+macro(add_avr_fuse_target)
+  add_custom_target(fuse
+    COMMAND ${AVRDUDE} -p ${MCU} -c linuxgpio ${FUSE})
+endmacro(add_avr_fuse_target)

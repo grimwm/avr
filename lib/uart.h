@@ -17,11 +17,17 @@ extern "C" {
 
 #define BAUDRATE ((F_CPU)/(BAUD*16UL)-1)
 
+typedef enum {
+  UM_Asynchronous,
+  UM_Synchronous,
+  UM_MasterSPI,
+} UARTMode;
+
 /**
  * @brief Enables the UART device for 8-bit data at
  * the specified {@see BAUDRATE}.
  */
-static inline void uart_enable(void) {
+static inline void uart_enable(UARTMode syncMode) {
   UBRR0H = BAUDRATE >> 8;
   UBRR0L = BAUDRATE;
 
@@ -31,6 +37,16 @@ static inline void uart_enable(void) {
   // Set asynchronous USART
   // Set frame format: 8-bit data, 2-stop bit
   UCSR0C |= _BV(USBS0) | _BV(UCSZ01) | _BV(UCSZ00);
+  switch (syncMode) {
+  case UM_Synchronous:
+    UCSR0C |= _BV(UMSEL00);
+    break;
+  case UM_MasterSPI:
+    UCSR0C |= _BV(UMSEL01) | _BV(UMSEL00);
+    break;
+  case UM_Asynchronous:
+    break;
+  }
 }
 
 /**

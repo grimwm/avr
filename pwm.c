@@ -5,18 +5,12 @@
 #include "servo.h"
 #include "uart.h"
 
-#define ACK 0x7E
-
-// Memory for the ISR
-volatile uint8_t x200us;
-
 int main (void) {
-//  servo0_init(OC0A | OC0B);
-//  spi_init_slave(0);
-  uart_enable();
+//  servo1_init(OC1A | OC1B);
+  uart_enable(UM_Asynchronous);
   sei();
 
-  /* unsigned char degrees = 90; */
+//  unsigned char degrees = 90;
   for (;;) {
   /*   sleep_mode(); // sleep until we're awoken by an interrupt */
     for (unsigned char degrees = 0; degrees <= 180; ++degrees) {
