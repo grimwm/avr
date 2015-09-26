@@ -34,9 +34,8 @@ static inline void uart_enable(UARTMode syncMode) {
   // Set RX/TN enabled
   UCSR0B |= _BV(TXEN0) | _BV(RXEN0);
 
-  // Set asynchronous USART
-  // Set frame format: 8-bit data, 2-stop bit
-  UCSR0C |= _BV(USBS0) | _BV(UCSZ01) | _BV(UCSZ00);
+  // Set frame format: 8-bit data, 1 stop bit
+  UCSR0C |= _BV(UCSZ01) | _BV(UCSZ00);
   switch (syncMode) {
   case UM_Asynchronous:
     break;
