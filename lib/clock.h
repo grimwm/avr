@@ -10,14 +10,12 @@ extern "C" {
 #endif
 
 // Computation for a single microsecond, rounded down to nearest clock tick.
-#define us_clocks(us, cs) ((us) * MHZ / F_CPU) << us_clocks_ ## cs
+#define us_clocks(us, cs) ((us) / ((F_CPU / MHZ) >> us_clocks_ ## cs))
 #define us_clocks_Prescaled_1 0
 #define us_clocks_Prescaled_8 3
 #define us_clocks_Prescaled_64 5
 #define us_clocks_Prescaled_256 8
 #define us_clocks_Prescaled_1024 10
-
-
 
 #ifdef __cplusplus
 } // extern "C"
