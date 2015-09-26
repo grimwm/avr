@@ -8,7 +8,8 @@ int main (void) {
 
   unsigned char c = 0;
   do {
-    /*   sleep_mode(); // sleep until we're awoken by an interrupt */
+    c = uart_receive();
+    uart_transmit(c);
   } while (c);
 
   return 0;

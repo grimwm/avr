@@ -38,13 +38,13 @@ static inline void uart_enable(UARTMode syncMode) {
   // Set frame format: 8-bit data, 2-stop bit
   UCSR0C |= _BV(USBS0) | _BV(UCSZ01) | _BV(UCSZ00);
   switch (syncMode) {
+  case UM_Asynchronous:
+    break;
   case UM_Synchronous:
     UCSR0C |= _BV(UMSEL00);
     break;
   case UM_MasterSPI:
     UCSR0C |= _BV(UMSEL01) | _BV(UMSEL00);
-    break;
-  case UM_Asynchronous:
     break;
   }
 }
