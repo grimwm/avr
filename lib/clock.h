@@ -9,7 +9,10 @@ extern "C" {
 #  error F_CPU must be >= 1000000
 #endif
 
-// Computation for a single microsecond, rounded down to nearest clock tick.
+/**
+ * Converts the number of microseconds given to the nearest number of
+ * clock cycles necessary to reach it, rounded down to the nearest clock.
+ */
 #define us_clocks(us, cs) ((us) / ((F_CPU / MHZ) >> us_clocks_ ## cs))
 #define us_clocks_Prescaled_1 0
 #define us_clocks_Prescaled_8 3
