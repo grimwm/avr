@@ -5,7 +5,6 @@ extern "C" {
 #endif
 
 #include <inttypes.h>
-#include <avr/interrupt.h>
 
 #include "pwm.h"
 

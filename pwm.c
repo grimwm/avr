@@ -1,10 +1,29 @@
+/**
+ * This program sets up a 50 Hz PWM and a basic UART command structure.
+ * Users may connect to the UART and send one byte at a time to make up
+ * more complex commands.  The basic layout of the command format is
+ * like this: [B_1,B_2,B_3,B_4,...,B_n,'\r'], with the commas, brackets,
+ * and quotes all being abstract (e.g. not really sent across the wire).
+ *
+ * The commands respond immediately, not having an "end" until the CR
+ * gets sent, which will setup the buffers for the output pins on the PWM.
+ *
+ * Some example commands:
+ * -  EA1000<ENTER>     Toggles character echo, sets OCR1A's duty cycle to 1000us
+ * -  200B<ENTER>       Sets OCR1B's duty cycle to 200us.
+ * -  E                 Toggle character echo.
+ */
 #include <inttypes.h>
-#include <avr/io.h>
-#include <util/delay.h>
 
-#include "servo.h"
+#include <avr/interrupt.h>
+#include <avr/io.h>
+
 #include "pwm.h"
 #include "uart.h"
+
+uint16_t us2clocks(uint16_t us) {
+  return us_clocks(us, Prescaled_8);
+}
 
 int main (void) {
   cs1(Prescaled_8);
@@ -17,7 +36,7 @@ int main (void) {
   sei();
 
   volatile uint16_t* pin = 0;
-  int usBuffer = 0;
+  uint16_t usBuffer = 0;
   int doEcho = 0;
   for (;;) {
     unsigned char b = uart_receive();
@@ -32,7 +51,7 @@ int main (void) {
       doEcho = !doEcho;
     } else if ('\r' == b) {
       if (pin) {
-        *pin = us_clocks(usBuffer, Prescaled_8);
+        *pin = us2clocks(usBuffer);
         usBuffer = 0;
       }
 
