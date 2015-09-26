@@ -1,5 +1,3 @@
-#define F_CPU 10000000UL
-
 #include <stdlib.h>
 #include <avr/io.h>
 #include <util/delay.h>

@@ -26,6 +26,9 @@ if(AVR)
   add_executable(uart_echo uart_echo.c)
   add_avr_to_target(uart_echo)
 
+  add_executable(blinky blinky.c)
+  add_avr_to_target(blinky)
+
   add_definitions(-DBAUD=9600)
 else(AVR)
   add_executable(master master.c)
