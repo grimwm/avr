@@ -6,7 +6,7 @@
 #include "uart.h"
 
 int main (void) {
-//  servo1_init(OC1A | OC1B);
+//  servo_init(OC1A | OC1B);
   uart_enable(UM_Asynchronous);
   sei();
 

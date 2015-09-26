@@ -4,15 +4,18 @@
 extern "C" {
 #endif
 
+#include <inttypes.h>
 #include <avr/interrupt.h>
 
 #include "pwm.h"
 
-#define PWM_MIN_US 500
-#define PWM_MAX_US 1000
+#define PWM_MIN_US 500U   // 1ms with Phase Correct PWM
+#define PWM_MAX_US 1000U  // 2ms with Phase Correct PWM
 
 /**
  * Generate PWM duty cycle for servo positions between 0 and 180 degrees.
+ * Assumes a duty cycle of 1ms for the 0 degree position and
+ * 2ms for the 180 degree position.
  */
 static inline unsigned servo(unsigned degrees) {
   unsigned us = PWM_MIN_US + ((PWM_MAX_US - PWM_MIN_US) * degrees / 180);
@@ -24,7 +27,7 @@ static inline unsigned servo(unsigned degrees) {
  * Servos will be set to 90 degrees.
  * Don't forget to call sei() after you initialize hardware!
  */
-static inline void servo1_init(unsigned out_pins) {
+static inline void servo_init(unsigned out_pins) {
   cs1(Prescaled_8);
   wgm1(PhaseCorrectPWM);
   oc1(NonInverting);

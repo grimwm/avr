@@ -1,6 +1,6 @@
 /**
- * This file does its best to help you setup either an 8-bit timer/counter with OCR0A as TOP or a 16-bit
- * timer/counter with ICR1 as TOP.  Currently, any other modes of these two timer/counters are unsupported.
+ * This file does its best to help you setup a 16-bit timer/counter with ICR1 as TOP.
+ * Currently, any other modes of these two timer/counters are unsupported.
  * Any other timer/counters are also not supported at this time.
  *
  * The work of setting up the timer/counters is left mainly to three functions:
@@ -8,7 +8,6 @@
  *  - wgm1(): wave generation mode setup
  *  - oc1(): output compare mode setup
  *
- * OCR0A's valud TOP ranges are between 0x00 and 0xFF.
  * ICR1's valid TOP ranges are between 0x00 and 0xFFFF.
 **/
 
@@ -42,7 +41,6 @@ extern "C" {
  * Setup 16-bit timer/counter's wave generation mode.
  * No matter what WGM mode is selected, ICR will act as TOP.
  */
-#define wgm0(mode) wgm0_ ## mode()
 #define wgm1(mode) wgm1_ ## mode()
 #define wgm1_clearA() TCCR1A = (TCCR1A & ~(_BV(WGM11) | _BV(WGM10)))
 #define wgm1_clearB() TCCR1B = (TCCR1B & ~(_BV(WGM13) | _BV(WGM12)))
