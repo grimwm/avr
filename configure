@@ -20,6 +20,8 @@ def build_cmake_command(args, this_path):
     cmake_cmd = ["cmake"]
     if args.verbose:
         cmake_cmd.append("--debug-output")
+    if args.debug:
+        cmake_cmd.append('-DCMAKE_BUILD_TYPE=DEBUG')
     
     if "avr" == args.target_platform:
         cmake_cmd.append(
@@ -42,6 +44,7 @@ src_path = os.path.join(os.getcwd(), this_path)
 parser = argparse.ArgumentParser()
 parser.add_argument("--verbose", "-v", action="store_true")
 parser.add_argument('--build-dir', '-b', default='build', help='Where the build will be created.')
+parser.add_argument('--debug', '-d', action='store_true', help='Generate build with debug symbols.')
 
 target_parsers = parser.add_subparsers(help="Target platform")
 setup_target_avr_parser(target_parsers)

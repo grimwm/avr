@@ -23,7 +23,7 @@ set(COPT "-Os -mcall-prologues")
 
 set(
   CMAKE_C_FLAGS
-  "-mmcu=${MCU} -DF_CPU=${F_CPU} -std=c99 ${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
+  "-mmcu=${MCU} -DF_CPU=${F_CPU} -std=gnu11 ${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
   CACHE STRING "")# FORCE)
 
 set(

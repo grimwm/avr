@@ -10,7 +10,7 @@ set(CTUNING "-funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums")
 
 set(
   CMAKE_C_FLAGS
-  "-std=c99 ${COPT} ${CWARN} ${CFLAGS}"
+  "-std=gnu11 ${COPT} ${CWARN} ${CFLAGS}"
   CACHE STRING "")# FORCE)
 
 set(
