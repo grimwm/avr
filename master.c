@@ -1,12 +1,13 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <linux/types.h>
-#include <linux/spi/spidev.h>
+#include <termios.h>
+/* #include <string.h> //memset */
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define ACK 0x7E
@@ -17,77 +18,42 @@ static void pabort(const char *s)
   abort();
 }
 
-static const char* device = "/dev/spidev0.0";
-static uint8_t mode;
+static const char* device = "/dev/ttyAMA0";
 static uint8_t bits_per_word = 8;
-static uint32_t speed_hz = 500000;
-static uint16_t delay_us;
+static uint32_t baudrate = 9600;
 
-static void transfer(int fd, unsigned char degrees)
-{
-  uint8_t tx[] = {
-    degrees
-  };
-  uint8_t rx[ARRAY_SIZE(tx)] = {0, };
-  struct spi_ioc_transfer tr = {
-    .tx_buf = (unsigned long)tx,
-    .rx_buf = (unsigned long)rx,
-    .len = ARRAY_SIZE(tx),
-    .delay_usecs = delay_us,
-    .speed_hz = speed_hz,
-    .bits_per_word = bits_per_word,
-  };
-
-  int ret = ioctl(fd, SPI_IOC_MESSAGE(1), &tr);
-  if (ret < 1)
-    pabort("can't send spi message");
-
-  for (ret = 0; ret < ARRAY_SIZE(tx); ret++) {
-    if (!(ret % 6))
-      puts("");
-    printf("%.2X ", rx[ret]);
-  }
-  puts("");
-}
-
-static void print_usage(const char *prog)
-{
-  printf("Usage: %s [-DsdR]\n", prog);
-  puts("  -D --device   device to use (default /dev/spidev0.0)\n"
-       "  -s --speed    max speed (Hz)\n"
-       "  -d --delay    delay (usec)\n"
-       "  -R --ready    slave pulls low to pause\n");
+static void print_usage(const char *prog) {
+  printf("Usage: %s [-DbB]\n", prog);
+  puts("  -D --device   device to use (default /dev/ttyAMA0)\n"
+       "  -b --baud     baud rate (default 9600)\n"
+       "  -B --bpw      bits per word (default 8)\n");
   exit(1);
 }
 
-static void parse_opts(int argc, char *argv[])
-{
+static void parse_opts(int argc, char *argv[]) {
   while (1) {
     static const struct option lopts[] = {
       { "device",  1, 0, 'D' },
-      { "speed",   1, 0, 's' },
-      { "delay",   1, 0, 'd' },
-      { "ready",   0, 0, 'R' },
+      { "baud",    1, 0, 'b' },
+      { "bpw",     1, 0, 'B' },
       { NULL, 0, 0, 0 },
     };
 
-    int c = getopt_long(argc, argv, "D:s:d:R", lopts, NULL);
+    int c = getopt_long(argc, argv, "D:b:B:", lopts, NULL);
 
-    if (c == -1)
+    if (-1 == c) {
       break;
+    }
 
     switch (c) {
     case 'D':
       device = optarg;
       break;
-    case 's':
-      speed_hz = atoi(optarg);
+    case 'b':
+      baudrate = atoi(optarg);
       break;
-    case 'd':
-      delay_us = atoi(optarg);
-      break;
-    case 'R':
-      mode |= SPI_READY;
+    case 'B':
+      bits_per_word = atoi(optarg);
       break;
     default:
       print_usage(argv[0]);
@@ -97,59 +63,100 @@ static void parse_opts(int argc, char *argv[])
 }
 
 int main(int argc, char* argv[]) {
-  int ret = 0;
-
-  mode |= SPI_NO_CS;
   parse_opts(argc, argv);
 
-  int fd = open(device, O_RDWR);
-  if (fd < 0)
+  int fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK);
+  if (-1 == fd) {
     pabort("can't open device");
+  }
 
-  printf("spi mode: %d\n", mode);
+  if (-1 == fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK)) {
+    pabort("Setting stdin to nonblocking.");
+  }
+
+  if (!isatty(fd)) {
+    pabort("isatty");
+  }
+
   printf("bits per word: %d\n", bits_per_word);
-  printf("max speed: %d Hz (%d KHz)\n", speed_hz, speed_hz/1000);
+  printf("baud rate: %d\n", baudrate);
 
-  /*
-   * spi mode
-   */
-  ret = ioctl(fd, SPI_IOC_WR_MODE, &mode);
-  if (ret == -1)
-    pabort("can't set spi mode");
+  struct termios options;
+  if (-1 == tcgetattr(fd, &options)) {
+    pabort("Couldn't get current port options");
+  }
+  /* memset(&options, 0, sizeof(struct termios)); */
 
-  ret = ioctl(fd, SPI_IOC_RD_MODE, &mode);
-  if (ret == -1)
-    pabort("can't get spi mode");
+  /* Enable local line (no owner change) and enable receiver. */
+  options.c_cflag |= CLOCAL | CREAD;
+  /* Enable odd parity */
+  options.c_cflag |= PARENB | PARODD;
 
-  /*
-   * bits per word
-   */
-  ret = ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits_per_word);
-  if (ret == -1)
-    pabort("can't set bits per word");
+  options.c_cflag &= ~CSIZE;
+  switch (bits_per_word) {
+  case 5:
+    options.c_cflag |= CS5;
+    break;
+  case 6:
+    options.c_cflag |= CS6;
+    break;
+  case 7:
+    options.c_cflag |= CS7;
+    break;
+  default:
+  case 8:
+    options.c_cflag |= CS8;
+    break;
+  }
 
-  ret = ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &bits_per_word);
-  if (ret == -1)
-    pabort("can't get bits per word");
+  speed_t speed;
+  switch (baudrate) {
+  default:
+  case 9600:
+    speed = B9600;
+    break;
+  case 19200:
+    speed = B19200;
+    break;
+  case 57600:
+    speed = B57600;
+    break;
+  case 115200:
+    speed = B115200;
+    break;
+  }
+  if (-1 == cfsetispeed(&options, speed)) {
+    pabort("Error setting input speed");
+  }
+  if (-1 == cfsetospeed(&options, speed)) {
+    pabort("Error setting output speed");
+  }
 
-  /*
-   * max speed hz
-   */
-  ret = ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed_hz);
-  if (ret == -1)
-    pabort("can't set max speed hz");
+  /* Only send data after 1 chars are in the buffer.  Don't use a timer. */
+  options.c_lflag &= ~ICANON;
+  options.c_cc[VTIME] = 0;
+  options.c_cc[VMIN] = 1;
 
-  ret = ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed_hz);
-  if (ret == -1)
-    pabort("can't get max speed hz");
+  if (-1 == tcsetattr(fd, TCSANOW, &options)) {
+    pabort("Error setting serial line options");
+  }
 
+  printf("Enter input, and it will be sent to %s until EOF is encountered on stdin.\n\n\n", device);
   while (1) {
-    for (unsigned char degrees = 0; degrees <= 180; degrees += 15) {
-      transfer(fd, degrees);
+    unsigned char b = EOF;
+    if (read(STDIN_FILENO, &b, 1) > 0) {
+      if (EOF == b) {
+        break;
+      }
+
+      write(fd, &b, 1);
+      
+    }
+
+    if (read(fd, &b, 1) > 0) {
+      write(STDOUT_FILENO, &b, 1);
     }
   }
 
-  close(fd);
-
-  return ret;
+  return close(fd);
 }
