@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <termios.h>
-/* #include <string.h> //memset */
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define ACK 0x7E
@@ -65,7 +64,7 @@ static void parse_opts(int argc, char *argv[]) {
 int main(int argc, char* argv[]) {
   parse_opts(argc, argv);
 
-  int fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK);
+  int fd = open(device, O_RDWR | O_NOCTTY | O_NONBLOCK);
   if (-1 == fd) {
     pabort("can't open device");
   }
@@ -85,7 +84,8 @@ int main(int argc, char* argv[]) {
   if (-1 == tcgetattr(fd, &options)) {
     pabort("Couldn't get current port options");
   }
-  /* memset(&options, 0, sizeof(struct termios)); */
+
+  options.c_oflag &= ~OPOST;
 
   /* Enable local line (no owner change) and enable receiver. */
   options.c_cflag |= CLOCAL | CREAD;
@@ -133,28 +133,37 @@ int main(int argc, char* argv[]) {
   }
 
   /* Only send data after 1 chars are in the buffer.  Don't use a timer. */
-  options.c_lflag &= ~ICANON;
-  options.c_cc[VTIME] = 0;
-  options.c_cc[VMIN] = 1;
+  options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
 
-  if (-1 == tcsetattr(fd, TCSANOW, &options)) {
+  /* options.c_iflag &= ~(IGNBRK | BRKINT | ICRNL | INLCR | PARMRK | INPCK | ISTRIP | IXON); */
+  /* options.c_oflag = 0; */
+  /* options.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG); */
+  /* options.c_cflag &= ~(CSIZE | PARENB); */
+  /* options.c_cflag |= CS8; */
+  /* if (-1 == cfsetispeed(&options, B9600)) { */
+  /*   pabort("Error setting input speed"); */
+  /* } */
+  /* if (-1 == cfsetospeed(&options, B9600)) { */
+  /*   pabort("Error setting output speed"); */
+  /* } */
+  
+  if (-1 == tcsetattr(fd, TCSAFLUSH, &options)) {
     pabort("Error setting serial line options");
   }
 
-  printf("Enter input, and it will be sent to %s until EOF is encountered on stdin.\n\n\n", device);
+  printf("\nEnter input, and it will be sent to %s until EOF is encountered on stdin.\n\n\n", device);
   while (1) {
-    unsigned char b = EOF;
-    if (read(STDIN_FILENO, &b, 1) > 0) {
-      if (EOF == b) {
-        break;
+    unsigned char b=0;
+    if (read(fd, &b, 1) > 0) {
+      if (write(STDOUT_FILENO, &b, 1) < 1) {
+        pabort("writing to standard out");
       }
-
-      write(fd, &b, 1);
-      
     }
 
-    if (read(fd, &b, 1) > 0) {
-      write(STDOUT_FILENO, &b, 1);
+    if (read(STDIN_FILENO, &b, 1) > 0) {
+      if (write(fd, &b, 1) < 1) {
+        pabort("writing to tty");
+      }
     }
   }
 
