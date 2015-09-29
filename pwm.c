@@ -49,13 +49,13 @@ int main (void) {
       pin = &OCR1B;
     } else if ('E' == b || 'e' == b) {
       doEcho = !doEcho;
-    } else if ('\r' == b) {
+    } else if ('\r' == b || '\n' == b) {
       if (pin) {
         *pin = us2clocks(usBuffer);
         usBuffer = 0;
       }
 
-      if (doEcho) {
+      if (doEcho && '\r' == b) {
         uart_transmit('\r');
         b = '\n';
       }
