@@ -8,9 +8,6 @@
 #include <getopt.h>
 #include <termios.h>
 
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-#define ACK 0x7E
-
 static void pabort(const char *s)
 {
   perror(s);
