@@ -9,13 +9,14 @@ extern "C" {
 #endif
 
 #include <avr/io.h>
+#include <util/setbaud.h>
 
 #ifndef BAUD
 #  define BAUD 9600
 #  warning BAUD rate not set.  Setting BAUD rate to 9600.
 #endif // BAUD
 
-#define BAUDRATE ((F_CPU)/(BAUD*16UL)-1)
+// #define BAUDRATE ((F_CPU)/(BAUD*16UL)-1)
 
 typedef enum {
   UM_Asynchronous,
@@ -28,8 +29,10 @@ typedef enum {
  * the specified {@see BAUDRATE}.
  */
 static inline void uart_enable(UARTMode syncMode) {
-  UBRR0H = BAUDRATE >> 8;
-  UBRR0L = BAUDRATE;
+  // UBRR0H = BAUDRATE >> 8;
+  // UBRR0L = BAUDRATE & 0xFF;
+  UBRR0H = UBRRH_VALUE;
+  UBRR0L = UBRRL_VALUE;
 
   // Set RX/TN enabled
   UCSR0B |= _BV(TXEN0) | _BV(RXEN0);

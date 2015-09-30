@@ -20,6 +20,9 @@ include_directories(lib)
 if(AVR)
   add_avr_fuse_target()
 
+  add_executable(servo servo.c)
+  add_avr_to_target(servo)
+
   add_executable(pwm pwm.c)
   add_avr_to_target(pwm)
 
@@ -29,7 +32,11 @@ if(AVR)
   add_executable(blinky blinky.c)
   add_avr_to_target(blinky)
 
-  add_definitions(-DBAUD=9600)
+  add_definitions(-DBAUD=38400)
 else(AVR)
   add_executable(master master.c)
+  
+  add_executable(pwmmaster pwmmaster.c)
+
+  add_executable(jsmaster jsmaster.c)
 endif(AVR)

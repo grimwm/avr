@@ -21,6 +21,8 @@
 #include "pwm.h"
 #include "uart.h"
 
+#define ACK_BYTE 0xFF
+
 uint16_t us2clocks(uint16_t us) {
   return us_clocks(us, Prescaled_8);
 }
@@ -35,35 +37,37 @@ int main (void) {
   uart_enable(UM_Asynchronous);
   sei();
 
+  /**
+   * Packet structure: 1b (servo A or B) 16b (duty cycle in us)
+   */
   volatile uint16_t* pin = 0;
-  uint16_t usBuffer = 0;
-  int doEcho = 0;
+  volatile uint16_t usBuffer = 0;
   for (;;) {
     unsigned char b = uart_receive();
-    if (b >= '0' && b <= '9') {
-      usBuffer *= 10;
-      usBuffer += b-'0';
-    } else if ('A' == b || 'a' == b) {
+    
+    if (0xFF == b) {
+      usBuffer = 0;
+      OCR1A = OCR1B = 0;
+      continue;
+    }
+
+    if ('A' == b) {
       pin = &OCR1A;
-    } else if ('B' == b || 'b' == b) {
+    } else {
       pin = &OCR1B;
-    } else if ('E' == b || 'e' == b) {
-      doEcho = !doEcho;
-    } else if ('\r' == b || '\n' == b) {
-      if (pin) {
-        *pin = us2clocks(usBuffer);
-        usBuffer = 0;
-      }
+    } 
 
-      if (doEcho && '\r' == b) {
-        uart_transmit('\r');
-        b = '\n';
-      }
-    }
+    b = uart_receive();
+    usBuffer = b;// << 8;
+    usBuffer <<= 8;
+    b = uart_receive();
+    usBuffer |= b;
+    
+    *pin = us2clocks(usBuffer);
+    b = ACK_BYTE;
+    usBuffer = 0;
 
-    if (doEcho) {
-      uart_transmit(b);
-    }
+    uart_transmit(b);
   }
 
   return 0;
