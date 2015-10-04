@@ -16,8 +16,9 @@ add_custom_target(projheaders SOURCES ${PROJHEADERS})
 add_custom_target(projfiles_extra SOURCES
   README.md)
 
-include_directories(lib)
 if(AVR)
+  include_directories(libavr)
+  
   add_avr_fuse_target()
 
   add_executable(servo servo.c)
