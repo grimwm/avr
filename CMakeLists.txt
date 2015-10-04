@@ -37,6 +37,4 @@ else(AVR)
   add_executable(master master.c)
   
   add_executable(pwmmaster pwmmaster.c)
-
-  add_executable(jsmaster jsmaster.c)
 endif(AVR)
