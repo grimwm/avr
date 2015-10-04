@@ -58,8 +58,7 @@ int main (void) {
     } 
 
     b = uart_receive();
-    usBuffer = b;// << 8;
-    usBuffer <<= 8;
+    usBuffer = b << 8;
     b = uart_receive();
     usBuffer |= b;
     
