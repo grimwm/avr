@@ -12,9 +12,11 @@ are mostly targeted at Raspberry Pi use.  They will work on other machines,
 but some of the scripts may need to be modified.  I hope to change that after
 things solidify more.
 
-Please note that right now, this code is very crude and is currently covered
-under the **GPLv2.0 license** (see *LICENSE* for details).  I will likely put
-certain portions of it under the LGPL or BSD license in the future, but not yet.
+Please note that this code is covered by the MPLv2 license, which is quite
+liberal in how you can use it with your own software.  You may find its
+text at <https://www.mozilla.org/en-US/MPL/2.0/>.  If you have questions
+about it, the Internet is filled with FAQs, but I chose this license
+mostly for the benefit of everyone involved.
 
 Build Requirements
 ------------------

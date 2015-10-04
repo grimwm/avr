@@ -1,7 +1,15 @@
 /**
- * This file does its best to help you setup a 16-bit timer/counter with ICR1 as TOP.
- * Currently, any other modes of these two timer/counters are unsupported.
- * Any other timer/counters are also not supported at this time.
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0.  If a copy of the MPL
+ * was not distributed with this file, you can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright William Grim, 2015
+ *
+ * This file does its best to help you setup a 16-bit timer/counter with
+ * ICR1 as TOP.  Currently, any other modes of these two timer/counters
+ * are unsupported.  Any other timer/counters are also not supported at
+ * this time.
  *
  * The work of setting up the timer/counters is left mainly to three functions:
  *  - cs1(): clock source setup
@@ -9,7 +17,7 @@
  *  - oc1(): output compare mode setup
  *
  * ICR1's valid TOP ranges are between 0x00 and 0xFFFF.
-**/
+ */
 
 #pragma once
 
