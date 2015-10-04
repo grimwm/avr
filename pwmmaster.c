@@ -1,3 +1,12 @@
+/**
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0.  If a copy of the MPL
+ * was not distributed with this file, you can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright William Grim, 2015
+ */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
