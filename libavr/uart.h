@@ -56,6 +56,8 @@ static inline void uart_enable(UARTMode syncMode) {
     UCSR0C |= _BV(UMSEL01) | _BV(UMSEL00);
     break;
   }
+
+  (void)UDR0; // clear any data currently in the buffer
 }
 
 /**
