@@ -35,7 +35,12 @@ if(AVR)
 
   add_definitions(-DBAUD=38400)
 else(AVR)
-  add_executable(master master.c)
+  include_directories(lib)
+  add_subdirectory(lib)
   
-  add_executable(pwmmaster pwmmaster.c)
+  add_executable(master master.c)
+  target_link_libraries(master serial)
+  
+  add_executable(pwmmaster pwmmaster.c serialargparse.c)
+  target_link_libraries(pwmmaster serial)
 endif(AVR)

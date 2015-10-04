@@ -7,131 +7,90 @@
  * Copyright William Grim, 2015
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "serialargparse.h"
+#include "serial.h"
+
 #include <stdint.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
-#include <termios.h>
-#include <string.h> // memset
-#include <errno.h>
 
 #define COMMAND_EXEC_BYTE 0xFD
-#define BAD_BYTE 0xFE
+#define COMMAND_RESET_BYTE 0xFF
 #define ACK_BYTE 0xFF
 
+extern uint16_t htons (uint16_t);
+extern uint16_t ntohs (uint16_t);
+
 struct Command {
-  unsigned char servo;
+  unsigned char pwm;
   uint16_t us;
 } __attribute__((packed));
 
-static void pabort(const char *s)
-{
-  perror(s);
-  abort();
+struct Command ntoh(const struct Command* command) {
+  struct Command copy = {command->pwm, ntohs(command->us)};
+  return copy;
 }
 
-static const char* device = "/dev/ttyAMA0";
+struct Command hton(const struct Command* command) {
+  struct Command copy = {command->pwm, htons(command->us)};
+  return copy;
+}
 
 /**
- * Send data across the wire in the order it appears, one byte at a time.
- * File descriptor must be nonblocking.
+ * @brief Send a reset signal to the connected device.  This is done
+ * by sending COMMAND_RESET_BYTE for at least enough times for the
+ * device to notice it as the first byte of a "command".
+ * @param fd File descriptor where the reset will be sent.
  */
-void send(int fd, unsigned char data) {
-  while (write(fd, &data, 1) < 1) {
-    if (EAGAIN != errno) {
-      pabort("writing data");
-    }
-  }
-}
-
-unsigned char receive(int fd) {
-  unsigned char b;
-  
-  while (read(fd, &b, 1) < 1) {
-    if (EAGAIN != errno) {
-      pabort("reading tty");
-    }
-  }
-
-  return b;
-}
-
 void reset(int fd) {
-  for (int i = 0; i < 6; ++i) {
-    send(fd, 0xFF);
+  unsigned char b = COMMAND_RESET_BYTE;
+  for (int i = 0; i <= sizeof(struct Command); ++i) {
+    writetty(fd, &b, 1);
   }
 }
 
-void send_command(int fd, unsigned char servo, uint16_t us) {
-  send(fd, servo);
-  send(fd, (us >> 8) & 0xFF);
-  send(fd, us & 0xFF);
+/**
+ * @brief Send a command to the remote device connected to
+ * the file descriptor.
+ * @param fd Flle descriptor where command will be sent.
+ * @param command The command to be written across the wire.
+ */
+void send_command(int fd, const struct Command* command) {
+  struct Command data = hton(command);
+  writetty(fd, &data, sizeof(struct Command));
 
-  unsigned char b = receive(fd);
+  unsigned char b = readtty(fd);
   if (ACK_BYTE != b) {
     printf("expected %c, got %c", ACK_BYTE, b);
     abort();
-  /* } else { */
-  /*   printf("ACK %c%04X, %c%dus\n", servo, us, servo, us); */
   }
 }
 
 int main(int argc, char* argv[]) {
-  int fd = open(device, O_RDWR | O_NOCTTY | O_NONBLOCK);
-  if (-1 == fd) {
-    pabort("can't open device");
-  }
+  const struct SerialOptions options = parse_opts(argc, argv);
 
-  if (!isatty(fd)) {
-    pabort("isatty");
-  }
-
-  struct termios options;
-  memset(&options, 0, sizeof(struct termios));
-
-  options.c_oflag &= ~OPOST;
-
-  /* Enable local line (no owner change) and enable receiver. */
-  options.c_cflag |= CLOCAL | CREAD;
-  /* Enable odd parity */
-  options.c_cflag |= PARENB | PARODD;
-
-  options.c_cflag &= ~CSIZE;
-  options.c_cflag |= CS8;
-
-  speed_t speed = B38400;
-  if (-1 == cfsetispeed(&options, speed)) {
-    pabort("Error setting input speed");
-  }
-  if (-1 == cfsetospeed(&options, speed)) {
-    pabort("Error setting output speed");
-  }
-
-  /* Only send data after 1 chars are in the buffer.  Don't use a timer. */
-  options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-  options.c_cc[VMIN] = 1;
-
-  if (-1 == tcsetattr(fd, TCSAFLUSH, &options)) {
-    pabort("Error setting serial line options");
-  }
-
+  int fd = SerialOptions_setup(&options);
   reset(fd);
 
   while (1) {
-    const uint16_t min = 1, max = 3000;
     const unsigned char step = 4;
+    uint16_t min = 1, max = 3000;
     for (uint16_t us = min; us <= max; us += step) {
-      send_command(fd, 'A', us);
-      send_command(fd, 'B', max-us);
+      struct Command command = {'A', us};
+      printf("sizeof(Command)=%ld", sizeof(struct Command));
+      send_command(fd, &command);
+      command.pwm = 'B';
+      command.us = max-us;
+      send_command(fd, &command);
     }
 
     for (uint16_t us = max; us >= min; us -= step) {
-      send_command(fd, 'A', us);
-      send_command(fd, 'B', max-us);
+      struct Command command = {'A', us};
+      send_command(fd, &command);
+      command.pwm = 'B';
+      command.us = max-us;
+      send_command(fd, &command);
     }
   }
 
