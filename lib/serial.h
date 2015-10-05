@@ -17,24 +17,24 @@
 extern "C" {
 #endif
 
-#ifndef DEFAULT_TTY
-#  define DEFAULT_TTY "/dev/ttyAMA0"
+#ifndef DEFAULT_TTY_DEVICE
+#  define DEFAULT_TTY_DEVICE "/dev/ttyAMA0"
 #endif
 
-#ifndef DEFAULT_BPW
-#  define DEFAULT_BPW 8
+#ifndef DEFAULT_TTY_BPW
+#  define DEFAULT_TTY_BPW 8
 #endif
 
-#ifndef DEFAULT_BAUD
-#  define DEFAULT_BAUD 9600
+#ifndef DEFAULT_TTY_BAUD
+#  define DEFAULT_TTY_BAUD 9600
 #endif
 
-#ifndef DEFAULT_PARITY
-#  define DEFAULT_PARITY 'o'
+#ifndef DEFAULT_TTY_PARITY
+#  define DEFAULT_TTY_PARITY 'o'
 #endif
 
-#ifndef DEFAULT_STOP_BITS
-#  define DEFAULT_STOP_BITS 1
+#ifndef DEFAULT_TTY_STOP_BITS
+#  define DEFAULT_TTY_STOP_BITS 1
 #endif
 
 typedef struct {

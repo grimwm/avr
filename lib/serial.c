@@ -25,11 +25,11 @@ static void pabort(const char *s) {
 }
 
 void SerialOptions_init(SerialOptions* opts) {
-  strncpy(opts->device, DEFAULT_TTY, PATH_MAX);
-  opts->bits_per_word = DEFAULT_BPW;
-  opts->baudrate = DEFAULT_BAUD;
-  opts->parity = DEFAULT_PARITY;
-  opts->stop_bits = DEFAULT_STOP_BITS;
+  strncpy(opts->device, DEFAULT_TTY_DEVICE, PATH_MAX);
+  opts->bits_per_word = DEFAULT_TTY_BPW;
+  opts->baudrate = DEFAULT_TTY_BAUD;
+  opts->parity = DEFAULT_TTY_PARITY;
+  opts->stop_bits = DEFAULT_TTY_STOP_BITS;
 }
 
 int SerialOptions_setup(const SerialOptions* opts) {
