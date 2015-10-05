@@ -37,7 +37,7 @@ extern "C" {
 #  define DEFAULT_STOP_BITS 1
 #endif
 
-typedef struct SerialOptions {
+typedef struct {
   char device[PATH_MAX]; // path to serial device
   uint8_t bits_per_word;
   uint32_t baudrate;
@@ -49,7 +49,7 @@ typedef struct SerialOptions {
  * @brief Configure SerialOptions with some same defaults.
  * @param opts The options to be initialized.
  */
-void SerialOptions_init(struct SerialOptions* opts);
+void SerialOptions_init(SerialOptions* opts);
 
 /**
  * @brief Use "opts" to setup the serial device.
@@ -57,7 +57,7 @@ void SerialOptions_init(struct SerialOptions* opts);
  * @return The file descriptor to the serial device, configured
  *         according to "opts".  This may be closed using close(2).
  */
-int SerialOptions_setup(const struct SerialOptions* opts);
+int SerialOptions_setup(const SerialOptions* opts);
 
 /**
  * @brief Send a byte of data.  This function can handle a blocking

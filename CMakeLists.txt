@@ -41,6 +41,6 @@ else(AVR)
   add_executable(master master.c)
   target_link_libraries(master serial)
   
-  add_executable(pwmmaster pwmmaster.c serialargparse.c)
+  add_executable(pwmmaster pwmmaster.c)
   target_link_libraries(pwmmaster serial)
 endif(AVR)

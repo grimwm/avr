@@ -24,7 +24,7 @@ static void pabort(const char *s) {
   abort();
 }
 
-void SerialOptions_init(struct SerialOptions* opts) {
+void SerialOptions_init(SerialOptions* opts) {
   strncpy(opts->device, DEFAULT_TTY, PATH_MAX);
   opts->bits_per_word = DEFAULT_BPW;
   opts->baudrate = DEFAULT_BAUD;
@@ -32,7 +32,7 @@ void SerialOptions_init(struct SerialOptions* opts) {
   opts->stop_bits = DEFAULT_STOP_BITS;
 }
 
-int SerialOptions_setup(const struct SerialOptions* opts) {
+int SerialOptions_setup(const SerialOptions* opts) {
   int fd = open(opts->device, O_RDWR | O_NOCTTY | O_NONBLOCK);
   if (-1 == fd) {
     pabort("can't open device");
