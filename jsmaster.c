@@ -65,6 +65,9 @@ JoystickOptions parse_opts(int argc, char *argv[]) {
         abort();
       }
       break;
+    default:
+      print_usage(argv[0]);
+      exit(1);
     }
   }
 
