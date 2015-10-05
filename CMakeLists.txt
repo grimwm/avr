@@ -43,4 +43,6 @@ else(AVR)
   
   add_executable(pwmmaster pwmmaster.c)
   target_link_libraries(pwmmaster serial)
+
+  add_executable(jsmaster jsmaster.c)
 endif(AVR)
