@@ -28,46 +28,25 @@ typedef enum {
  * @brief Enables the UART device for 8-bit data at
  * the specified {@see BAUD}.
  */
-static inline void uart_enable(UARTMode syncMode) {
-  UBRR0H = UBRRH_VALUE;
-  UBRR0L = UBRRL_VALUE;
+void uart_enable(UARTMode syncMode);
 
-  // Set RX/TN enabled
-  UCSR0B |= _BV(TXEN0) | _BV(RXEN0);
-
-  // Set frame format: 8-bit data, 1 stop bit
-  UCSR0C |= _BV(UCSZ01) | _BV(UCSZ00);
-  switch (syncMode) {
-  case UM_Asynchronous:
-    break;
-  case UM_Synchronous:
-    UCSR0C |= _BV(UMSEL00);
-    break;
-  case UM_MasterSPI:
-    UCSR0C |= _BV(UMSEL01) | _BV(UMSEL00);
-    break;
-  }
-
-  (void)UDR0; // clear any data currently in the buffer
-}
+/**
+ * @brief Setup stdout to "print" through the serial port,
+ * making functions like printf(3) go through serial.
+ */
+void uart_setup_stdout(void);
 
 /**
  * @brief Transmits a character through the UART device.
  * @param data The data to be sent.
  */
-static inline void uart_transmit(unsigned char data) {
-  while (!(UCSR0A & _BV(UDRE0)));
-  UDR0 = data;
-}
+void uart_transmit(unsigned char data);
 
 /**
  * @brief Receives a character from the UART device.
  * @return Received character from the UART.
  */
-static inline unsigned char uart_receive(void) {
-  while (!(UCSR0A & _BV(RXC0)));
-  return UDR0;
-}
+unsigned char uart_receive(void);
 
 #ifdef __cplusplus
 } // extern "C"
