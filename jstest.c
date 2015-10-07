@@ -40,7 +40,6 @@ static void pabort(const char *s) {
 void print_usage(const char *prog) {
   printf("Usage: %s [-Db25678e]\n", prog);
   puts("  -D --device   device to use (default /dev/ttyAMA0)\n");
-  puts("  -C --config   joystick mapping file (default /etc/jsmaster.conf)\n");
   exit(1);
 }
 
@@ -50,26 +49,17 @@ JoystickOptions parse_opts(int argc, char *argv[]) {
   
   static const struct option lopts[] = {
     { "device",  1, 0, 'D' },
-    { "config",  1, 0, 'C' },
     { NULL, 0, 0, 0 },
   };
 
   while (1) {
-    int c = getopt_long(argc, argv, "D:C:", lopts, NULL);
+    int c = getopt_long(argc, argv, "D:b:25678e", lopts, NULL);
     if (-1 == c) {
       break;
     }
     
     switch (c) {
     case 'D':
-      if (!strncpy(options.device, optarg,
-                   PATH_MAX < strlen(optarg) ? PATH_MAX : strlen(optarg))) {
-        perror("Copying device to options.");
-        abort();
-      }
-      break;
-    case 'C':
-      /* Read a file and setup mappings. */
       if (!strncpy(options.device, optarg,
                    PATH_MAX < strlen(optarg) ? PATH_MAX : strlen(optarg))) {
         perror("Copying device to options.");

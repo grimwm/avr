@@ -48,4 +48,7 @@ else(AVR)
   target_link_libraries(pwmmaster serial)
 
   add_executable(jsmaster jsmaster.c)
+  target_link_libraries(jsmaster json serial)
+
+  add_executable(jstest jstest.c)
 endif(AVR)
