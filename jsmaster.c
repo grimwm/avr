@@ -36,6 +36,25 @@ static char jsDevicePath[PATH_MAX] = DEFAULT_JOYSTICK_DEVICE;
 static char jsOptionsPath[PATH_MAX] = "/etc/jsmaster.conf";
 static SerialOptions serialOptions;
 
+typedef struct {
+  unsigned char msgid;         // msg correlation id
+  unsigned char command;       // command for remote
+  uint16_t value;              // command argument value
+} __attribute__((packed)) Command;
+
+/**
+ * @brief Prepare a Command structure for wire transmission, by making sure
+ * all the bytes are in network order.
+ * @param msgid
+ * @param command
+ * @param value
+ * @return A command in network byte order.
+ */
+Command Command_init(char msgid, char command, uint16_t value) {
+  Command cmd = {msgid, command, htons(value)};
+  return cmd;
+}
+
 void print_usage(const char *prog) {
   printf("Usage: %s [-Db25678e]\n", prog);
   puts("  -t --tty      device to use (default /dev/ttyAMA0)\n"
@@ -53,18 +72,18 @@ void print_usage(const char *prog) {
 
 void parse_opts(int argc, char *argv[]) {
   static const struct option lopts[] = {
-  { "tty",      1, 0, 't' },
-  { "joystick", 1, 0, 'j' },
-  { "config",   1, 0, 'c' },
-  { "baud",     1, 0, 'b' },
-  { NULL,       0, 0, '2' },
-  { NULL,       0, 0, '5' },
-  { NULL,       0, 0, '6' },
-  { NULL,       0, 0, '7' },
-  { NULL,       0, 0, '8' },
-  { NULL,       0, 0, 'e' },
-  { NULL,       0, 0, 0 },
-};
+    { "tty",      1, 0, 't' },
+    { "joystick", 1, 0, 'j' },
+    { "config",   1, 0, 'c' },
+    { "baud",     1, 0, 'b' },
+    { NULL,       0, 0, '2' },
+    { NULL,       0, 0, '5' },
+    { NULL,       0, 0, '6' },
+    { NULL,       0, 0, '7' },
+    { NULL,       0, 0, '8' },
+    { NULL,       0, 0, 'e' },
+    { NULL,       0, 0, 0 },
+  };
 
   while (1) {
     int c = getopt_long(argc, argv, "d:c:", lopts, NULL);
@@ -127,17 +146,6 @@ void parse_opts(int argc, char *argv[]) {
       exit(1);
     }
   }
-}
-
-typedef struct {
-  unsigned char msgid;         // msg correlation id
-  unsigned char command;       // command for remote
-  uint16_t value;              // command argument value
-} __attribute__((packed)) Command;
-
-Command Command_init(char msgid, char command, uint16_t value) {
-  Command cmd = {msgid, command, htons(value)};
-  return cmd;
 }
 
 int main(int argc, char* argv[]) {
