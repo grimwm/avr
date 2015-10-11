@@ -130,22 +130,14 @@ void parse_opts(int argc, char *argv[]) {
 }
 
 typedef struct {
-  char msgid;         // msg correlation id
-  char command;       // command for remote
-  uint16_t value;     // command argument value
+  unsigned char msgid;         // msg correlation id
+  unsigned char command;       // command for remote
+  uint16_t value;              // command argument value
 } __attribute__((packed)) Command;
 
 Command Command_init(char msgid, char command, uint16_t value) {
   Command cmd = {msgid, command, htons(value)};
   return cmd;
-}
-
-/**
- * @brief Package up a command using proper byte ordering and send it over the wire.
- * @param cmd
- */
-void commandWrite(int fd, const Command* cmd) {
-
 }
 
 int main(int argc, char* argv[]) {
