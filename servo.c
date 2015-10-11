@@ -29,27 +29,17 @@
 #define NACK_BYTE 0xFF
 
 #define NUM_RESET_BYTES 4
-#define RESET_BYTE(x) (0xFF-(x))
+#define RESET_BYTE 0xFF
 
 #define LEFT 'L'
 #define RIGHT 'R'
 
+#define CENTER_DEGREES 90
+
 int main (void) {
-  servo_init(OC1A | OC1B);
+  servo_init(OC1A | OC1B, CENTER_DEGREES);
   uart_enable(UM_Asynchronous);
   sei();
-
-  /*
-   * Initialize comms by making sure serial device is sending proper data.
-   */
-  for (int i = 0; i < NUM_RESET_BYTES;) {
-    unsigned char b = uart_receive();
-    if (RESET_BYTE(i) == b) {
-      ++i;
-    } else {
-      i = 0;
-    }
-  }
 
   /*
    * Run a loop that receives a command and controls the servos with it.
@@ -62,6 +52,12 @@ int main (void) {
     uint16_t value;
     value = uart_receive() << 8;
     value |= uart_receive();
+
+    /* Reset the device if we receive some special packets. */
+    if (RESET_BYTE == msgid && RESET_BYTE == cmd &&
+        (RESET_BYTE << 8 | RESET_BYTE) == value) {
+      OCR1A = OCR1B = servo(CENTER_DEGREES);
+    }
 
     if (LEFT == cmd) {
       OCR1A = servo(value);

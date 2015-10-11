@@ -24,7 +24,7 @@
 #include "io.h"
 #include "serial.h"
 
-#define CENTER_DECIDEGREE 900
+#define CENTER_DEGREE 90
 
 #ifndef DEFAULT_JOYSTICK_DEVICE
 #  define DEFAULT_JOYSTICK_DEVICE "/dev/input/js0"
@@ -182,7 +182,7 @@ int main(int argc, char* argv[]) {
           // TODO send the command aio_write
           static unsigned char msgid = 0xFF;
           Command cmd = Command_init(++msgid, jsOpts.y_left == jsevent.number ? 'L' : 'R',
-                                     CENTER_DECIDEGREE + CENTER_DECIDEGREE * (jsevent.value / 0x7FFFFFFF));
+                                     CENTER_DEGREE + CENTER_DEGREE * (jsevent.value / 0x7FFFFFFF));
           writetty(serialfd, &cmd, sizeof(Command));
         }
 

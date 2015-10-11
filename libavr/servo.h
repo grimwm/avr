@@ -35,7 +35,7 @@ static inline unsigned servo(unsigned degrees) {
  * Servos will be set to 90 degrees.
  * Don't forget to call sei() after you initialize hardware!
  */
-static inline void servo_init(unsigned out_pins) {
+static inline void servo_init(unsigned out_pins, unsigned degrees) {
   cs1(Prescaled_8);
   wgm1(PhaseCorrectPWM);
   oc1(NonInverting);
@@ -43,8 +43,8 @@ static inline void servo_init(unsigned out_pins) {
   // Set top of counter to 10000us, setting a period of 20ms = 50 Hz.
   ICR1 = us_clocks(10000, Prescaled_8);
 
-  // Set servos to 90 degrees.
-  OCR1A = OCR1B = servo(90);
+  // Set servos to degrees.
+  OCR1A = OCR1B = servo(degrees);
 
   oc1_enable(out_pins);
 }
