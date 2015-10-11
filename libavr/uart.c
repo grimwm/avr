@@ -15,10 +15,10 @@
 #include <avr/io.h>
 #include <util/setbaud.h>
 
-static int uart_putchar(unsigned char c, FILE* stream);
+static int uart_putchar(char c, FILE* stream);
 static FILE mystdout = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
-int uart_putchar(unsigned char c, FILE* stream) {
+int uart_putchar(char c, FILE* stream) {
   if ('\n' == c) {
     uart_putchar('\n', stream);
   }
