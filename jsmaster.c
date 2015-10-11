@@ -8,7 +8,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,148 +16,178 @@
 #include <limits.h>
 #include <errno.h>
 #include <getopt.h>
+#include <assert.h>
 
-#include <linux/joystick.h>
+#include <arpa/inet.h>
 
-typedef struct JoystickOptions {
-  char device[PATH_MAX];
-} JoystickOptions;
+#include "joystick.h"
+#include "io.h"
+#include "serial.h"
+
+#define CENTER_DECIDEGREE 900
 
 #ifndef DEFAULT_JOYSTICK_DEVICE
 #  define DEFAULT_JOYSTICK_DEVICE "/dev/input/js0"
 #endif
 
-void JoystickOptions_init(JoystickOptions* opts) {
-  strncpy(opts->device, DEFAULT_JOYSTICK_DEVICE, PATH_MAX);
-}
-
-static void pabort(const char *s) {
-  perror(s);
-  abort();
-}
+/* Options that may be set from the command-line. */
+static char ttyDevicePath[PATH_MAX] = DEFAULT_TTY_DEVICE;
+static char jsDevicePath[PATH_MAX] = DEFAULT_JOYSTICK_DEVICE;
+static char jsOptionsPath[PATH_MAX] = "/etc/jsmaster.conf";
+static SerialOptions serialOptions;
 
 void print_usage(const char *prog) {
   printf("Usage: %s [-Db25678e]\n", prog);
-  puts("  -D --device   device to use (default /dev/ttyAMA0)\n");
-  puts("  -C --config   joystick mapping file (default /etc/jsmaster.conf)\n");
+  puts("  -t --tty      device to use (default /dev/ttyAMA0)\n"
+       "  -j --joystick device to use (default /dev/input/js0\n"
+       "  -c --config   joystick mapping file (default /etc/jsmaster.conf)\n"
+       "  -b --baud     baud rate (default 9600)\n"
+       "  -2            use two stop bits instead of one\n"
+       "  -5            bits per word\n"
+       "  -6            bits per word\n"
+       "  -7            bits per word\n"
+       "  -8            bits per word (default)\n"
+       "  -e            even parity (default odd)\n");
   exit(1);
 }
 
-JoystickOptions parse_opts(int argc, char *argv[]) {
-  JoystickOptions options;
-  JoystickOptions_init(&options);
-  
+void parse_opts(int argc, char *argv[]) {
   static const struct option lopts[] = {
-    { "device",  1, 0, 'D' },
-    { "config",  1, 0, 'C' },
-    { NULL, 0, 0, 0 },
-  };
+  { "tty",      1, 0, 't' },
+  { "joystick", 1, 0, 'j' },
+  { "config",   1, 0, 'c' },
+  { "baud",     1, 0, 'b' },
+  { NULL,       0, 0, '2' },
+  { NULL,       0, 0, '5' },
+  { NULL,       0, 0, '6' },
+  { NULL,       0, 0, '7' },
+  { NULL,       0, 0, '8' },
+  { NULL,       0, 0, 'e' },
+  { NULL,       0, 0, 0 },
+};
 
   while (1) {
-    int c = getopt_long(argc, argv, "D:C:", lopts, NULL);
+    int c = getopt_long(argc, argv, "d:c:", lopts, NULL);
     if (-1 == c) {
       break;
     }
     
     switch (c) {
-    case 'D':
-      if (!strncpy(options.device, optarg,
-                   PATH_MAX < strlen(optarg) ? PATH_MAX : strlen(optarg))) {
-        perror("Copying device to options.");
+    case 't': {
+      size_t len = PATH_MAX < strlen(optarg) ? PATH_MAX : strlen(optarg);
+      if (!strncpy(ttyDevicePath, optarg, len)) {
+        perror("Copying tty path.");
         abort();
       }
+      ttyDevicePath[len] = '\0';
       break;
-    case 'C':
-      /* Read a file and setup mappings. */
-      if (!strncpy(options.device, optarg,
-                   PATH_MAX < strlen(optarg) ? PATH_MAX : strlen(optarg))) {
-        perror("Copying device to options.");
+    }
+    case 'j': {
+      size_t len = PATH_MAX < strlen(optarg) ? PATH_MAX : strlen(optarg);
+      if (!strncpy(jsDevicePath, optarg, len)) {
+        perror("Copying joystick path.");
         abort();
       }
+      jsDevicePath[len] = '\0';
+      break;
+    }
+    case 'c': {
+      size_t len = PATH_MAX < strlen(optarg) ? PATH_MAX : strlen(optarg);
+      if (!strncpy(jsOptionsPath, optarg, len)) {
+        perror("Copying joystick config path.");
+        abort();
+      }
+      jsOptionsPath[len] = '\0';
+      break;
+    }
+    case 'b': {
+      long val = strtol(optarg, NULL, 10);
+      if (LONG_MIN == val || LONG_MAX == val || val > (uint32_t)-1) {
+        perror("Invalid baud rate given.");
+        abort();
+      }
+
+      serialOptions.baudrate = val;
+      break;
+    }
+    case '2':
+      serialOptions.stop_bits = 2;
+      break;
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+      serialOptions.bits_per_word = c-'0';
+      break;
+    case 'e':
+      serialOptions.parity = 'e';
       break;
     default:
       print_usage(argv[0]);
       exit(1);
     }
   }
+}
 
-  return options;
+typedef struct {
+  char msgid;         // msg correlation id
+  char command;       // command for remote
+  uint16_t value;     // command argument value
+} __attribute__((packed)) Command;
+
+Command Command_init(char msgid, char command, uint16_t value) {
+  Command cmd = {msgid, command, htons(value)};
+  return cmd;
+}
+
+/**
+ * @brief Package up a command using proper byte ordering and send it over the wire.
+ * @param cmd
+ */
+void commandWrite(int fd, const Command* cmd) {
+
 }
 
 int main(int argc, char* argv[]) {
-  JoystickOptions opts = parse_opts(argc, argv);
-  
-  int fd = open(opts.device, O_RDONLY | O_NONBLOCK);
-  if (-1 == fd) {
-    pabort("can't open device");
+  SerialOptions_init(&serialOptions);
+  parse_opts(argc, argv);
+
+  JoystickOptions jsOpts = JoystickOptions_init(jsDevicePath, jsOptionsPath);
+  printf("device: %s\ny_left:%d\ny_right:%d\n",
+         jsOpts.devicepath, jsOpts.y_left, jsOpts.y_right);
+
+  Joystick js = Joystick_open(&jsOpts);
+
+  /* Check that axes are in valid ranges. */
+  if (jsOpts.y_left < 0 || jsOpts.y_left >= js.naxes) {
+    fprintf(stderr, "y_left=%d out of range=[0,%d] of axes", jsOpts.y_left, js.naxes);
+  }
+  if (jsOpts.y_right < 0 || jsOpts.y_right >= js.naxes) {
+    fprintf(stderr, "y_right=%d out of range=[0,%d] of axes", jsOpts.y_right, js.naxes);
   }
 
-  int version;
-  if (-1 == ioctl(fd, JSIOCGVERSION, &version)) {
-    pabort("Error getting driver version");
-  }
+  printf("Joystick driver version: %d.%d.%d\n",
+         js.driverVersion >> 16, (js.driverVersion >> 8) & 0xff, js.driverVersion & 0xff);
+  printf("Device name: %s\n", js.name);
 
-  char name[128];
-  if (-1 == ioctl(fd, JSIOCGNAME(sizeof(name)), name)) {
-    pabort("Error getting joystick name");
-  }
-
-  unsigned char naxes;
-  if (-1 == ioctl(fd, JSIOCGAXES, &naxes)) {
-    pabort("Error getting number joystick axes");
-  }
-
-  unsigned char nbuttons;
-  if (-1 == ioctl(fd, JSIOCGBUTTONS, &nbuttons)) {
-    pabort("Error getting number joystick buttons");
-  }
-
-  printf("Driver version: %d.%d.%d\n",
-         version >> 16, (version >> 8) & 0xff, version & 0xff);
-  printf("{\n"
-         "\tName: %s\n"
-         "\t# axes: %d\n"
-         "\t# buttons: %d\n"
-         "}\n",
-         name, naxes, nbuttons);
-
-  int* axes;
-  char* buttons;
-
-  axes = calloc(naxes, sizeof(int));
-  buttons = calloc(nbuttons, sizeof(char));
+  int serialfd = SerialOptions_open(&serialOptions);
   
   while (1) {
-    struct js_event jsevent;
+    JoystickEvent jsevent;
 
-    /* fcntl(fd, F_SETFL, O_NONBLOCK); */
-    while (read(fd, &jsevent, sizeof(struct js_event)) ==
-           sizeof(struct js_event)) {
-      switch (jsevent.type & ~JS_EVENT_INIT) {
-      case JS_EVENT_AXIS:
-        axes[jsevent.number] = jsevent.value;
-        break;
-      case JS_EVENT_BUTTON:
-        buttons[jsevent.number] = jsevent.value;
+    while (1 == Joystick_getEvent(&js, &jsevent)) {
+      switch (jsevent.type & ~JSE_INIT) {
+      case JSE_AXIS: {
+        if (jsOpts.y_left == jsevent.number || jsOpts.y_right == jsevent.number) {
+          // TODO send the command aio_write
+          static unsigned char msgid = 0xFF;
+          Command cmd = Command_init(++msgid, jsOpts.y_left == jsevent.number ? 'L' : 'R',
+                                     CENTER_DECIDEGREE + CENTER_DECIDEGREE * (jsevent.value / 0x7FFFFFFF));
+          writetty(serialfd, &cmd, sizeof(Command));
+        }
+
         break;
       }
-
-      printf("\r");
-      
-      // Print axis info
-      printf("Axes: ");
-      if (naxes) {
-        for (unsigned char i = 0; i < naxes; ++i) {
-          printf("%2d:%6d ", i, axes[i]);
-        }
-      }
-
-      // Print button info
-      printf("Buttons: ");
-      if (nbuttons) {
-        for (unsigned char i = 0; i < nbuttons; ++i) {
-          printf("%2d:%s ", i, buttons[i] ? "on" : "off");
-        }
       }
 
       usleep(100);

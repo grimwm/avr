@@ -136,18 +136,19 @@ int main(int argc, char* argv[]) {
       printf("\r");
       
       // Print axis info
-      printf("Axes: ");
+      printf("Axes: [");
       if (naxes) {
         for (unsigned char i = 0; i < naxes; ++i) {
-          printf("%2d:%6d ", i, axes[i]);
+          printf("%2d:%6d%c", i, axes[i], naxes-1 == i ? ']' : ' ');
         }
       }
 
       // Print button info
-      printf("Buttons: ");
+      printf(" Buttons: [");
       if (nbuttons) {
         for (unsigned char i = 0; i < nbuttons; ++i) {
-          printf("%2d:%s ", i, buttons[i] ? "on" : "off");
+          printf("%2d:%s%c", i, buttons[i] ? "on" : "off",
+                 nbuttons-1 == i ? ']' : ' ');
         }
       }
 

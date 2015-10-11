@@ -46,18 +46,18 @@ typedef struct {
 } SerialOptions;
 
 /**
- * @brief Configure SerialOptions with some same defaults.
+ * @brief Configure SerialOptions with some sane defaults.
  * @param opts The options to be initialized.
  */
 void SerialOptions_init(SerialOptions* opts);
 
 /**
- * @brief Use "opts" to setup the serial device.
+ * @brief Use "opts" to setup the serial device and open a handle to it.
  * @param opts
  * @return The file descriptor to the serial device, configured
  *         according to "opts".  This may be closed using close(2).
  */
-int SerialOptions_setup(const SerialOptions* opts);
+int SerialOptions_open(const SerialOptions* opts);
 
 /**
  * @brief Send a byte of data.  This function can handle a blocking

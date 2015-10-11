@@ -1,6 +1,7 @@
 .idea/
 *.pro
 *.user
+*.conf
 
 build*/
 *.hex

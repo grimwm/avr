@@ -32,7 +32,7 @@ void SerialOptions_init(SerialOptions* opts) {
   opts->stop_bits = DEFAULT_TTY_STOP_BITS;
 }
 
-int SerialOptions_setup(const SerialOptions* opts) {
+int SerialOptions_open(const SerialOptions* opts) {
   int fd = open(opts->device, O_RDWR | O_NOCTTY | O_NONBLOCK);
   if (-1 == fd) {
     pabort("can't open device");

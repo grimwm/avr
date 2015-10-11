@@ -144,7 +144,7 @@ void send_command(int fd, const struct Command* command) {
 int main(int argc, char* argv[]) {
   const SerialOptions options = parse_opts(argc, argv);
 
-  int fd = SerialOptions_setup(&options);
+  int fd = SerialOptions_open(&options);
   reset(fd);
 
   while (1) {
