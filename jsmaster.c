@@ -86,7 +86,7 @@ void parse_opts(int argc, char *argv[]) {
   };
 
   while (1) {
-    int c = getopt_long(argc, argv, "d:c:", lopts, NULL);
+    int c = getopt_long(argc, argv, "t:j:c:b:25678e", lopts, NULL);
     if (-1 == c) {
       break;
     }
