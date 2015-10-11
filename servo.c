@@ -26,42 +26,53 @@
 #include "servo.h"
 #include "uart.h"
 
-#define COMMAND_EXEC_BYTE 0xFD
-#define BAD_BYTE 0xFE
-#define ACK_BYTE 0xFF
+#define NACK_BYTE 0xFF
+
+#define NUM_RESET_BYTES 4
+#define RESET_BYTE(x) (0xFF-(x))
+
+#define LEFT 'L'
+#define RIGHT 'R'
 
 int main (void) {
   servo_init(OC1A | OC1B);
   uart_enable(UM_Asynchronous);
   sei();
 
-  volatile uint16_t* pin = 0;
-  uint8_t degrees = 0;
+  /*
+   * Initialize comms by making sure serial device is sending proper data.
+   */
+  for (int i = 0; i < NUM_RESET_BYTES;) {
+    unsigned char b = uart_receive();
+    if (RESET_BYTE(i) == b) {
+      ++i;
+    } else {
+      i = 0;
+    }
+  }
+
+  /*
+   * Run a loop that receives a command and controls the servos with it.
+   * If any of the commands don't specify which servo to control, send
+   * back a NACK_BYTE; otherwise, send back the msgid.
+   */
   for (;;) {
-    volatile unsigned char b = uart_receive();
-    switch (b) {
-    case COMMAND_EXEC_BYTE:
-      *pin = servo(degrees);
-      b = ACK_BYTE;
-      break;
-    case 'A':
-      pin = &OCR1A;
-      break;
-    case 'B':
-      pin = &OCR1B;
-      break;
-    case ACK_BYTE:
-      break;
-    default:
-      if (b > 180) {
-        b = BAD_BYTE;
-      } else {
-        degrees = b;
-      }
-      break;
+    unsigned char msgid = uart_receive();
+    unsigned char cmd = uart_receive();
+    uint16_t value;
+    value = uart_receive() << 8;
+    value |= uart_receive();
+
+    if (LEFT == cmd) {
+      OCR1A = servo(value);
+    } else if (RIGHT == cmd) {
+      OCR1B = servo(value);
+    } else {
+      uart_transmit(NACK_BYTE);
+      continue;
     }
     
-    uart_transmit(b);
+    uart_transmit(msgid);
   }
 
   return 0;
