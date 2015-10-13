@@ -87,11 +87,11 @@ Joystick Joystick_open(const JoystickOptions* opts) {
     pabort("Error getting joystick name");
   }
 
-  if (-1 == ioctl(js.fd, JSIOCGAXES, js.naxes)) {
+  if (-1 == ioctl(js.fd, JSIOCGAXES, &js.naxes)) {
     pabort("Error getting number joystick axes");
   }
 
-  if (-1 == ioctl(js.fd, JSIOCGBUTTONS, js.nbuttons)) {
+  if (-1 == ioctl(js.fd, JSIOCGBUTTONS, &js.nbuttons)) {
     pabort("Error getting number joystick buttons");
   }
 
