@@ -21,9 +21,11 @@ set(CXXWARN "-Wall -Werror")
 set(CTUNING "-funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums")
 set(COPT "-Os -mcall-prologues")
 
+# BAUD_TOL is set large, because we are instead going to trust the developer to make a good decision, especially
+# if they're using crystal oscillators or better.
 set(
   CMAKE_C_FLAGS
-  "-mmcu=${MCU} -DF_CPU=${F_CPU} -std=gnu11 ${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
+  "-mmcu=${MCU} -DF_CPU=${F_CPU} -DBAUD=${BAUD} -DBAUD_TOL=100 -std=gnu11 ${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
   CACHE STRING "")# FORCE)
 
 set(
@@ -31,7 +33,15 @@ set(
   "-mmcu=${MCU} -DF_CPU=${F_CPU} -std=c++11 ${CDEBUG} ${COPT} ${CXXWARN} ${CXXFLAGS}"
   CACHE STRING "")# FORCE)
 
-set(FUSE "-U lfuse:w:0xe2:m -U hfuse:w:0xde:m -U efuse:w:0x00:m")
+# Internal RC oscillator, default settings.
+# Clock NOT divided by 8
+# 2.7v bod
+#set(FUSE -U lfuse:w:0xe2:m -U hfuse:w:0xde:m -U efuse:w:0x00:m)
+
+# Full-swing crystal oscillator, slowly rising power.
+# Clock NOT divided by 8
+# 2.7v bod
+set(FUSE -U lfuse:w:0xf7:m -U hfuse:w:0xde:m -U efuse:w:0x00:m)
 
 macro(add_avr_to_target target_name)
   add_custom_command(TARGET ${target_name}

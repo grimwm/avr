@@ -17,7 +17,6 @@ add_custom_target(projfiles_extra SOURCES
   README.md)
 
 if(AVR)
-  add_definitions(-DBAUD=38400)
   include_directories(libavr)
   add_subdirectory(libavr)
 

@@ -15,6 +15,7 @@ def setup_target_avr_parser(parsers):
     parser.set_defaults(target_platform="avr")
     parser.add_argument("-fcpu", required=True, type=int, help="CPU frequency setting (Hz)")
     parser.add_argument("-mcu", required=True, help="AVR MCU model (ex. -mcu=atmega88)")
+    parser.add_argument("-baud", type=int, default=9600, help="BAUD rate for any code using the UART (default: 9600)")
 
 def build_cmake_command(args, this_path):
     cmake_cmd = ["cmake"]
@@ -29,6 +30,7 @@ def build_cmake_command(args, this_path):
             os.path.join(this_path, "cmake", "avr_toolchain.cmake"))
         cmake_cmd.append("-DF_CPU=%d" % args.fcpu)
         cmake_cmd.append("-DMCU=%s" % args.mcu)
+        cmake_cmd.append("-DBAUD=%d" % args.baud)
     elif 'default' == args.target_platform:
         cmake_cmd.append(
             "-DCMAKE_TOOLCHAIN_FILE=%s" %\
@@ -43,7 +45,7 @@ src_path = os.path.join(os.getcwd(), this_path)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--verbose", "-v", action="store_true")
-parser.add_argument('--build-dir', '-b', default='build', help='Where the build will be created.')
+parser.add_argument('--build-dir', '-b', default='build', help='Where the build will be created. (default: build)')
 parser.add_argument('--debug', '-d', action='store_true', help='Generate build with debug symbols.')
 
 target_parsers = parser.add_subparsers(help="Target platform")
