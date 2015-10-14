@@ -120,7 +120,7 @@ int SerialOptions_open(const SerialOptions* opts) {
 void writetty(int fd, const void* data, size_t length) {
   while (write(fd, data, length) < length) {
     if (EAGAIN != errno) {
-      pabort("writing data");
+      pabort("writing data to tty");
     }
   }
 }
