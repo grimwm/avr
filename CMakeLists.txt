@@ -40,12 +40,6 @@ else(AVR)
   include_directories(lib)
   add_subdirectory(lib)
   
-  add_executable(master master.c)
-  target_link_libraries(master io)
-  
-  add_executable(pwmmaster pwmmaster.c)
-  target_link_libraries(pwmmaster io)
-
   add_executable(jsmaster jsmaster.c)
   target_link_libraries(jsmaster io joystick)
 
