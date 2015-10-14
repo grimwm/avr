@@ -26,7 +26,8 @@ extern "C" {
  * 2ms for the 180 degree position.
  */
 static inline unsigned servo(unsigned degrees) {
-  unsigned us = PWM_MIN_US + ((PWM_MAX_US - PWM_MIN_US) * degrees / 180);
+  static const unsigned m = (PWM_MAX_US - PWM_MIN_US) / 2;
+  const unsigned us = m + (m * degrees / 180);
   return us_clocks(us, Prescaled_8);
 }
 
