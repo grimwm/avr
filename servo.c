@@ -41,6 +41,8 @@ int main (void) {
   uart_enable(UM_Asynchronous);
   sei();
 
+  OCR1A = OCR1B = servo(CENTER_DEGREES);
+  
   /*
    * Run a loop that receives a command and controls the servos with it.
    * If any of the commands don't specify which servo to control, send
@@ -49,15 +51,8 @@ int main (void) {
   for (;;) {
     unsigned char msgid = uart_receive();
     unsigned char cmd = uart_receive();
-    uint16_t value;
-    value = uart_receive() << 8;
+    int16_t value = uart_receive() << 8;
     value |= uart_receive();
-
-    /* Reset the device if we receive some special packets. */
-    if (RESET_BYTE == msgid && RESET_BYTE == cmd &&
-        (RESET_BYTE << 8 | RESET_BYTE) == value) {
-      OCR1A = OCR1B = servo(CENTER_DEGREES);
-    }
 
     if (LEFT == cmd) {
       OCR1A = servo(value);

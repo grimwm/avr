@@ -172,11 +172,6 @@ int main(int argc, char* argv[]) {
 
   int serialfd = SerialOptions_open(&serialOptions);
 
-  for (int i = 0; i < sizeof(Command); ++i) {
-    int v = 0xFF;
-    writetty(serialfd, &v, 1);
-  }
-  
   while (1) {
     JoystickEvent jsevent;
 
@@ -186,13 +181,12 @@ int main(int argc, char* argv[]) {
         if (jsOpts.y_left == jsevent.number || jsOpts.y_right == jsevent.number) {
           // TODO send the command aio_write
           static unsigned char msgid = 0xFF;
-          /* int32_t v = jsevent.value < 0 ? 3*jsevent.value : jsevent.value; */
           Command cmd = Command_init(++msgid, jsOpts.y_left == jsevent.number ? 'L' : 'R',
                                      CENTER_DEGREE + (CENTER_DEGREE * -jsevent.value) / 0x7FFF);
           writetty(serialfd, &cmd, sizeof(Command));
-          
+
           unsigned char ack = readtty(serialfd);
-          printf("Command: %u, %d, %c, %d, %d\r", cmd.msgid, ack, cmd.command, ntohs(cmd.value), -jsevent.value);
+          printf("Command: %u, %u, %c, %d, %d\r", cmd.msgid, ack, cmd.command, ntohs(cmd.value), -jsevent.value);
         }
 
         break;
