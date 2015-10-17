@@ -15,23 +15,23 @@
 #include <avr/io.h>
 #include <util/setbaud.h>
 
-static int uart_putchar(char c, FILE* stream);
-static FILE mystdout = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
+static int uart0_putchar(char c, FILE* stream);
+static FILE mystdout = FDEV_SETUP_STREAM(uart0_putchar, NULL, _FDEV_SETUP_WRITE);
 
-int uart_putchar(char c, FILE* stream) {
+int uart0_putchar(char c, FILE* stream) {
   if ('\n' == c) {
-    uart_putchar('\n', stream);
+    uart0_putchar('\n', stream);
   }
 
-  uart_transmit(c);
+  uart0_transmit(c);
   return 0;
 }
 
-void uart_setup_stdout() {
+void uart0_setup_stdout() {
   stdout = &mystdout;
 }
 
-void uart_enable(UARTMode syncMode) {
+void uart0_enable(UARTMode syncMode) {
   UBRR0H = UBRRH_VALUE;
   UBRR0L = UBRRL_VALUE;
 
@@ -54,12 +54,12 @@ void uart_enable(UARTMode syncMode) {
   }
 }
 
-void uart_transmit(unsigned char data) {
+void uart0_transmit(unsigned char data) {
   while (!(UCSR0A & _BV(UDRE0)));
   UDR0 = data;
 }
 
-unsigned char uart_receive(void) {
+unsigned char uart0_receive(void) {
   while (!(UCSR0A & _BV(RXC0)));
   return UDR0;
 }

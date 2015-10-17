@@ -13,14 +13,14 @@
 #include "uart.h"
 
 int main (void) {
-  uart_enable(UM_Asynchronous);
+  uart0_enable(UM_Asynchronous);
   sei();
 
   DDRB = 0xFF;
 
   unsigned char c = 0;
   do {
-    c = uart_receive();
+    c = uart0_receive();
 
     // Do some blinking if we receive a number between 1 and 9.
     if (c >= '1' && c <= '9') {
@@ -32,7 +32,7 @@ int main (void) {
       }
     }
     
-    uart_transmit(c);
+    uart0_transmit(c);
   } while (1);
 
   return 0;

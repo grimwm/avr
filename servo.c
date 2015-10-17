@@ -38,7 +38,7 @@
 
 int main (void) {
   servo_init(OC1A | OC1B, CENTER_DEGREES);
-  uart_enable(UM_Asynchronous);
+  uart0_enable(UM_Asynchronous);
   sei();
 
   OCR1A = OCR1B = servo(CENTER_DEGREES);
@@ -49,21 +49,21 @@ int main (void) {
    * back a NACK_BYTE; otherwise, send back the msgid.
    */
   for (;;) {
-    unsigned char msgid = uart_receive();
-    unsigned char cmd = uart_receive();
-    int16_t value = uart_receive() << 8;
-    value |= uart_receive();
+    unsigned char msgid = uart0_receive();
+    unsigned char cmd = uart0_receive();
+    int16_t value = uart0_receive() << 8;
+    value |= uart0_receive();
 
     if (LEFT == cmd) {
       OCR1A = servo(value);
     } else if (RIGHT == cmd) {
       OCR1B = servo(value);
     } else {
-      uart_transmit(NACK_BYTE);
+      uart0_transmit(NACK_BYTE);
       continue;
     }
     
-    uart_transmit(msgid);
+    uart0_transmit(msgid);
   }
 
   return 0;

@@ -28,25 +28,26 @@ typedef enum {
  * @brief Enables the UART device for 8-bit data at
  * the specified {@see BAUD}.
  */
-void uart_enable(UARTMode syncMode);
+void uart0_enable(UARTMode syncMode);
 
 /**
  * @brief Setup stdout to "print" through the serial port,
  * making functions like printf(3) go through serial.
  */
-void uart_setup_stdout(void);
+void uart0_setup_stdout(void);
 
 /**
  * @brief Transmits a character through the UART device.
  * @param data The data to be sent.
  */
-void uart_transmit(unsigned char data);
+void uart0_transmit(unsigned char data);
 
 /**
  * @brief Receives a character from the UART device.
  * @return Received character from the UART.
  */
-unsigned char uart_receive(void);
+unsigned char uart0_receive(void);
+
 
 #ifdef __cplusplus
 } // extern "C"
