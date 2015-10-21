@@ -73,7 +73,7 @@ void writetty(int fd, const void* data, size_t length);
  * @param fd The file descriptor from which a byte will be read.
  * @returns A byte of data read from the file descriptor.
  */
-unsigned char readtty(int fd);
+uint8_t readtty(int fd);
 
 #ifdef __cplusplus
 } // extern "C"

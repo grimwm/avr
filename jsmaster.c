@@ -31,6 +31,8 @@
 #  define DEFAULT_JOYSTICK_DEVICE "/dev/input/js0"
 #endif
 
+#define MIN(x,y) ((x) < (y) ? (x) : (y))
+
 /* Options that may be set from the command-line. */
 static char ttyDevicePath[PATH_MAX] = DEFAULT_TTY_DEVICE;
 static char jsDevicePath[PATH_MAX] = DEFAULT_JOYSTICK_DEVICE;
@@ -38,9 +40,9 @@ static char jsOptionsPath[PATH_MAX] = "/etc/jsmaster.conf";
 static SerialOptions serialOptions;
 
 typedef struct {
-  uint8_t msgid;         // msg correlation id
-  uint8_t command;       // command for remote
-  uint16_t value;              // command argument value
+  uint8_t msgid;        // msg correlation id
+  uint8_t command;      // command for remote
+  uint16_t value;       // command argument value
 } __attribute__((packed)) Command;
 
 /**
@@ -94,7 +96,7 @@ void parse_opts(int argc, char *argv[]) {
     
     switch (c) {
     case 't': {
-      size_t len = PATH_MAX < strlen(optarg) ? PATH_MAX : strlen(optarg);
+      size_t len = MIN(strlen(optarg), PATH_MAX);
       if (!strncpy(ttyDevicePath, optarg, len)) {
         perror("Copying tty path.");
         abort();
@@ -103,7 +105,7 @@ void parse_opts(int argc, char *argv[]) {
       break;
     }
     case 'j': {
-      size_t len = PATH_MAX < strlen(optarg) ? PATH_MAX : strlen(optarg);
+      size_t len = MIN(strlen(optarg), PATH_MAX);
       if (!strncpy(jsDevicePath, optarg, len)) {
         perror("Copying joystick path.");
         abort();
@@ -112,7 +114,7 @@ void parse_opts(int argc, char *argv[]) {
       break;
     }
     case 'c': {
-      size_t len = PATH_MAX < strlen(optarg) ? PATH_MAX : strlen(optarg);
+      size_t len = MIN(strlen(optarg), PATH_MAX);
       if (!strncpy(jsOptionsPath, optarg, len)) {
         perror("Copying joystick config path.");
         abort();

@@ -22,23 +22,34 @@ if(AVR)
 
   add_avr_fuse_target()
 
-  add_executable(servo servo.c)
-  add_avr_to_target(servo)
-  target_link_libraries(servo avr)
+  add_avr_executable(bootloader bootloader.c)
+  set_property(TARGET bootloader APPEND PROPERTY
+    COMPILE_DEFINITIONS BOOT_TIMEOUT_MS=10000)
+  set_target_properties(bootloader PROPERTIES LINK_FLAGS
+    -Wl,--section-start=.text=${BOOTSTARTB})
+  target_link_libraries(bootloader io)
+  add_avr_install_target(bootloader)
 
-  add_executable(pwm pwm.c)
-  add_avr_to_target(pwm)
-  target_link_libraries(pwm avr)
+  add_avr_executable(servo servo.c)
+  target_link_libraries(servo io)
+  add_avr_install_target(servo)
 
-  add_executable(uart_echo uart_echo.c)
-  add_avr_to_target(uart_echo)
-  target_link_libraries(uart_echo avr)
+  add_avr_executable(pwm pwm.c)
+  target_link_libraries(pwm io)
+  add_avr_install_target(pwm)
 
-  add_executable(blinky blinky.c)
-  add_avr_to_target(blinky)
+  add_avr_executable(uart_echo uart_echo.c)
+  target_link_libraries(uart_echo io)
+  add_avr_install_target(uart_echo)
+
+  add_avr_executable(blinky blinky.c)
+  add_avr_install_target(blinky)
 else(AVR)
   include_directories(lib)
   add_subdirectory(lib)
+
+  add_executable(hexuploader hexuploader.c)
+  target_link_libraries(hexuploader io)
   
   add_executable(jsmaster jsmaster.c)
   target_link_libraries(jsmaster io joystick)

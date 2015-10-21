@@ -2,6 +2,7 @@ set(CMAKE_SYSTEM_NAME Generic)
 
 set(CMAKE_CROSSCOMPILING ON)
 
+set(CMAKE_ASM_COMPILER avr-as)
 set(CMAKE_C_COMPILER avr-gcc)
 set(CMAKE_CXX_COMPILER avr-g++)
 set(CMAKE_OBJCOPY avr-objcopy CACHE STRING "")
@@ -21,8 +22,9 @@ set(CXXWARN "-Wall -Werror")
 set(CTUNING "-funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums")
 set(COPT "-Os -mcall-prologues")
 
-# BAUD_TOL is set large, because we are instead going to trust the developer to make a good decision, especially
-# if they're using crystal oscillators or better.
+# BAUD_TOL is set to a large value because we are going to trust the developer
+# to make a good decision, especially if they're using crystal oscillators
+# or external clocks.
 set(
   CMAKE_C_FLAGS
   "-mmcu=${MCU} -DF_CPU=${F_CPU} -DBAUD=${BAUD} -DBAUD_TOL=100 -std=gnu11 ${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
@@ -36,25 +38,29 @@ set(
 # Internal RC oscillator, default settings.
 # Clock NOT divided by 8
 # 2.7v bod
-#set(FUSE -U lfuse:w:0xe2:m -U hfuse:w:0xde:m -U efuse:w:0x00:m)
+# set(FUSE -U lfuse:w:0xe2:m -U hfuse:w:0xde:m -U efuse:w:0x00:m)
 
 # Full-swing crystal oscillator, slowly rising power.
 # Clock NOT divided by 8
 # 2.7v bod
 set(FUSE -U lfuse:w:0xf7:m -U hfuse:w:0xde:m -U efuse:w:0x00:m)
 
-macro(add_avr_to_target target_name)
+macro(add_avr_executable target_name srcs)
+  add_executable(${target_name} ${srcs})
+  
   add_custom_command(TARGET ${target_name}
     POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O ihex -R .eeprom ${target_name} ${target_name}.hex)
 
-  add_custom_target(install_${target_name}
-    COMMAND ${AVRDUDE} -p ${MCU} -c linuxgpio -U flash:w:${target_name}.hex
-    DEPENDS ${target_name})
-
   set_directory_properties(PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
     ${target_name}.hex)
-endmacro(add_avr_to_target)
+endmacro(add_avr_executable)
+
+macro(add_avr_install_target target_name)
+  add_custom_target(install_${target_name}
+    COMMAND ${AVRDUDE} -p ${MCU} -c linuxgpio -U flash:w:${target_name}.hex -U lock:w:0x3f:m
+    DEPENDS ${target_name})
+endmacro(add_avr_install_target)
 
 macro(add_avr_fuse_target)
   add_custom_target(fuse

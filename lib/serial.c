@@ -33,7 +33,8 @@ void SerialOptions_init(SerialOptions* opts) {
 }
 
 int SerialOptions_open(const SerialOptions* opts) {
-  int fd = open(opts->device, O_RDWR | O_NOCTTY | O_NONBLOCK);
+  /* int fd = open(opts->device, O_RDWR | O_NOCTTY | O_NONBLOCK); */
+  int fd = open(opts->device, O_RDWR | O_NOCTTY);
   if (-1 == fd) {
     pabort("can't open device");
   }
@@ -78,8 +79,11 @@ int SerialOptions_open(const SerialOptions* opts) {
     break;
   }
 
-  speed_t speed = B9600;
+  speed_t speed = 0;
   switch (opts->baudrate) {
+  case 9600:
+    speed = B9600;
+    break;
   case 19200:
     speed = B19200;
     break;
@@ -95,6 +99,9 @@ int SerialOptions_open(const SerialOptions* opts) {
   case 230400:
     speed = B230400;
     break;
+  default:
+    fprintf(stderr, "Invalid baud rate: %d", opts->baudrate);
+    abort();
   }
   if (-1 == cfsetispeed(&termopts, speed)) {
     pabort("Error setting input speed");
@@ -118,20 +125,36 @@ int SerialOptions_open(const SerialOptions* opts) {
 }
 
 void writetty(int fd, const void* data, size_t length) {
-  while (write(fd, data, length) < length) {
-    if (EAGAIN != errno) {
-      pabort("writing data to tty");
-    }
+  /* for (size_t i = 0; i < length; ++i) { */
+  /*   while (write(fd, data+i, 1) < 1) { */
+  /*     if (EAGAIN != errno) { */
+  /*       pabort("writing data to tty"); */
+  /*     } */
+  /*     usleep(100*1000); */
+  /*   } */
+  /*   usleep(100*1000); */
+  /* } */
+  /* while (write(fd, data, length) < length) { */
+  /*   if (EAGAIN != errno) { */
+  /*     pabort("writing data to tty"); */
+  /*   } */
+  /* } */
+  if (-1 == write(fd, data, length)) {
+    pabort("wrtiing data to tty");
   }
 }
 
-unsigned char readtty(int fd) {
-  unsigned char b;
+uint8_t readtty(int fd) {
+  uint8_t b;
   
-  while (read(fd, &b, 1) < 1) {
-    if (EAGAIN != errno) {
-      pabort("reading tty");
-    }
+  /* while (read(fd, &b, sizeof(uint8_t)) < 1) { */
+  /*   if (EAGAIN != errno) { */
+  /*     pabort("reading tty"); */
+  /*   } */
+  /* } */
+
+  if (-1 == read(fd, &b, sizeof(uint8_t))) {
+    pabort("reading tty");
   }
 
   return b;

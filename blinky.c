@@ -7,18 +7,16 @@
  * Copyright William Grim, 2015
  */
 
-#include <stdlib.h>
+/* #include <stdlib.h> */
 #include <avr/io.h>
 #include <util/delay.h>
 
-int main(void)
-{
+int main(void) {
   DDRB = 0xFF;  // PORTB is output, all pins
   PORTB = 0x00; // Make pins low to start
 
   // blink an LED for S.O.S.
   for (;;) {
-    PORTB ^= 0xFF;   // invert all the pins
     for (int i = 0; i < 3; ++i) {
       PORTB = 0xFF;
       _delay_ms(200);

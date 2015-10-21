@@ -1,1 +1,1 @@
-add_library(avr STATIC uart.c)
+add_library(io STATIC uart.c)

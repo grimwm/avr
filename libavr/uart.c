@@ -19,7 +19,7 @@ static int uart0_putchar(char c, FILE* stream);
 static FILE mystdout = FDEV_SETUP_STREAM(uart0_putchar, NULL, _FDEV_SETUP_WRITE);
 
 int uart0_putchar(char c, FILE* stream) {
-  if ('\n' == c) {
+  if ('\r' == c) {
     uart0_putchar('\n', stream);
   }
 
