@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
@@ -93,12 +94,12 @@ int main(int argc, char* argv[]) {
     pabort("Error getting joystick name");
   }
 
-  unsigned char naxes;
+  uint8_t naxes;
   if (-1 == ioctl(fd, JSIOCGAXES, &naxes)) {
     pabort("Error getting number joystick axes");
   }
 
-  unsigned char nbuttons;
+  uint8_t nbuttons;
   if (-1 == ioctl(fd, JSIOCGBUTTONS, &nbuttons)) {
     pabort("Error getting number joystick buttons");
   }

@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
@@ -37,8 +38,8 @@ static char jsOptionsPath[PATH_MAX] = "/etc/jsmaster.conf";
 static SerialOptions serialOptions;
 
 typedef struct {
-  unsigned char msgid;         // msg correlation id
-  unsigned char command;       // command for remote
+  uint8_t msgid;         // msg correlation id
+  uint8_t command;       // command for remote
   uint16_t value;              // command argument value
 } __attribute__((packed)) Command;
 
@@ -180,12 +181,12 @@ int main(int argc, char* argv[]) {
       case JSE_AXIS: {
         if (jsOpts.y_left == jsevent.number || jsOpts.y_right == jsevent.number) {
           // TODO send the command aio_write
-          static unsigned char msgid = 0xFF;
+          static uint8_t msgid = 0xFF;
           Command cmd = Command_init(++msgid, jsOpts.y_left == jsevent.number ? 'L' : 'R',
                                      CENTER_DEGREE + (CENTER_DEGREE * -jsevent.value) / 0x7FFF);
           writetty(serialfd, &cmd, sizeof(Command));
 
-          unsigned char ack = readtty(serialfd);
+          uint8_t ack = readtty(serialfd);
           printf("Command: %u, %u, %c, %d, %d\r", cmd.msgid, ack, cmd.command, ntohs(cmd.value), -jsevent.value);
         }
 

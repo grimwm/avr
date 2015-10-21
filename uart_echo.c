@@ -18,7 +18,7 @@ int main (void) {
 
   DDRB = 0xFF;
 
-  unsigned char c = 0;
+  uint8_t c = 0;
   do {
     c = uart0_receive();
 

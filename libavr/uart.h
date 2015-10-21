@@ -40,13 +40,26 @@ void uart0_setup_stdout(void);
  * @brief Transmits a character through the UART device.
  * @param data The data to be sent.
  */
-void uart0_transmit(unsigned char data);
+void uart0_transmit(uint8_t data);
+
+/**
+ * @brief Write a series of data to the UART device.
+ * @param data
+ * @param length
+ */
+void uart0_write(uint8_t* data, uint8_t length);
+
+/**
+ * @brief Determine whether or not the UART has data for reception.
+ * @return 1 if the the UART device has data, 0 otherwise.
+ */
+uint8_t uart0_receive_buffer_full(void);
 
 /**
  * @brief Receives a character from the UART device.
  * @return Received character from the UART.
  */
-unsigned char uart0_receive(void);
+uint8_t uart0_receive(void);
 
 
 #ifdef __cplusplus

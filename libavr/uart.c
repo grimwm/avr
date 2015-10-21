@@ -54,12 +54,22 @@ void uart0_enable(UARTMode syncMode) {
   }
 }
 
-void uart0_transmit(unsigned char data) {
+void uart0_transmit(uint8_t data) {
   while (!(UCSR0A & _BV(UDRE0)));
   UDR0 = data;
 }
 
-unsigned char uart0_receive(void) {
+uint8_t uart0_receive_buffer_full(void) {
+  return UCSR0A & _BV(RXC0);
+}
+
+uint8_t uart0_receive(void) {
   while (!(UCSR0A & _BV(RXC0)));
   return UDR0;
+}
+
+void uart0_write(uint8_t* data, uint8_t length) {
+  for (uint8_t i = 0; i < length; ++i) {
+    uart0_transmit(data[i]);
+  }
 }

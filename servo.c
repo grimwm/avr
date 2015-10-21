@@ -1,4 +1,11 @@
 /**
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0.  If a copy of the MPL
+ * was not distributed with this file, you can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright William Grim, 2015
+ *
  * This program sets up a 50 Hz PWM and a basic UART command structure.
  * Users may connect to the UART and send one byte at a time to make up
  * more complex commands.  The basic layout of the command format is
@@ -49,8 +56,8 @@ int main (void) {
    * back a NACK_BYTE; otherwise, send back the msgid.
    */
   for (;;) {
-    unsigned char msgid = uart0_receive();
-    unsigned char cmd = uart0_receive();
+    uint8_t msgid = uart0_receive();
+    uint8_t cmd = uart0_receive();
     int16_t value = uart0_receive() << 8;
     value |= uart0_receive();
 
