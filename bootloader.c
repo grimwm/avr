@@ -88,10 +88,6 @@ int main(void) {
 restart:
   crc = 0;
   for (;;) {
-    if (!uart0_receive_buffer_full()) {
-      continue;
-    }
-    
     uint8_t command = uart0_receive();
 
     switch (command) {

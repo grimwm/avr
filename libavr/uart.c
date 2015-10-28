@@ -59,10 +59,6 @@ void uart0_transmit(uint8_t data) {
   UDR0 = data;
 }
 
-uint8_t uart0_receive_buffer_full(void) {
-  return UCSR0A & _BV(RXC0);
-}
-
 uint8_t uart0_receive(void) {
   while (!(UCSR0A & _BV(RXC0)));
   return UDR0;
