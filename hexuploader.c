@@ -227,9 +227,10 @@ int main(int argc, char* argv[]) {
 
   IntelHexRecord record;
   for (fetch_record(fd, &record); 1 != record.type; fetch_record(fd, &record)) {
+    static size_t lineno = 0;
+    ++lineno;
+    
     if (verbose) {
-      static size_t lineno = 0;
-      printf("Sending record #" SSIZET_FMT "\n", ++lineno);
       IntelHexRecord_print(stdout, &record);
     }
 
@@ -238,7 +239,8 @@ int main(int argc, char* argv[]) {
     writetty(serialfd, &record.length, sizeof(uint8_t));
     uint8_t len = readtty(serialfd);
     if (len != record.length) {
-      fprintf(stderr, "bad length response: expected %02x, got %02x\n", record.length, len);
+      fprintf(stderr, "bad length response line " SSIZET_FMT ": expected %02x, got %02x\n",
+              lineno, record.length, len);
       exit(1);
     }
     printf("%02x", len);
@@ -251,7 +253,8 @@ int main(int argc, char* argv[]) {
 
     uint8_t addrsum = readtty(serialfd);
     if (addrsum != (record.address >> 8) + (record.address & 0xFF)) {
-      fprintf(stderr, "bad address sum: expected %02x, got %02x\n", (record.address >> 8) + (record.address & 0xFF), addrsum);
+      fprintf(stderr, "bad address sum line " SSIZET_FMT ": expected %02x, got %02x\n", lineno,
+              (record.address >> 8) + (record.address & 0xFF), addrsum);
       exit(1);
     }
     printf("%04x", record.address);
@@ -264,7 +267,8 @@ int main(int argc, char* argv[]) {
       writetty(serialfd, &record.data[i], sizeof(uint8_t));
       uint8_t data = readtty(serialfd);
       if (data != record.data[i]) {
-        fprintf(stderr, "bad data byte #" SSIZET_FMT ", expected %02x, got %02x\n", i, record.data[i], data);
+        fprintf(stderr, "bad data byte column " SSIZET_FMT " line "
+                SSIZET_FMT ", expected %02x, got %02x\n", i, lineno, record.data[i], data);
         exit(1);
       } else {
         printf("%02x", data);
@@ -274,7 +278,8 @@ int main(int argc, char* argv[]) {
     /* Read the computer CRC and compare it to ours. */
     uint8_t crc = readtty(serialfd);
     if (crc != record.crc) {
-      fprintf(stderr, "bad crc response, expected %02x, got %02x\n", record.crc, crc);
+      fprintf(stderr, "bad crc response line " SSIZET_FMT ", expected %02x, got %02x\n",
+              lineno, record.crc, crc);
       exit(1);
     } else {
       printf("%02x", crc);
