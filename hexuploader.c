@@ -25,6 +25,8 @@
 #include "serial.h"
 #include "math.h"
 
+#define SSIZET_FMT "%zd"
+
 /* Options that may be set from the command-line. */
 static char ttyDevicePath[PATH_MAX] = DEFAULT_TTY_DEVICE;
 static char ihexFilePath[PATH_MAX];
@@ -227,7 +229,7 @@ int main(int argc, char* argv[]) {
   for (fetch_record(fd, &record); 1 != record.type; fetch_record(fd, &record)) {
     if (verbose) {
       static size_t lineno = 0;
-      printf("Sending record #%d\n", ++lineno);
+      printf("Sending record #" SSIZET_FMT "\n", ++lineno);
       IntelHexRecord_print(stdout, &record);
     }
 
@@ -268,7 +270,7 @@ int main(int argc, char* argv[]) {
       writetty(serialfd, &record.data[i], sizeof(uint8_t));
       uint8_t data = readtty(serialfd);
       if (data != record.data[i]) {
-        fprintf(stderr, "bad data byte #%d, expected %02x, got %02x\n", i, record.data[i], data);
+        fprintf(stderr, "bad data byte #" SSIZET_FMT ", expected %02x, got %02x\n", i, record.data[i], data);
         exit(1);
       } else {
         printf("%02x", data);
