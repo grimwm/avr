@@ -249,18 +249,12 @@ int main(int argc, char* argv[]) {
     writetty(serialfd, &record.address, sizeof(uint16_t));
     record.address = ntohs(record.address);
 
-    uint8_t msb = readtty(serialfd);
-    printf("%02x", msb);
-    if (msb != ((record.address >> 8) & 0xFF)) {
-      fprintf(stderr, "bad address msb: expected %02x, got %02x\n", (record.address >> 8) & 0xFF, msb);
+    uint8_t addrsum = readtty(serialfd);
+    if (addrsum != (record.address >> 8) + (record.address & 0xFF)) {
+      fprintf(stderr, "bad address sum: expected %02x, got %02x\n", (record.address >> 8) + (record.address & 0xFF), addrsum);
       exit(1);
     }
-    uint8_t lsb = readtty(serialfd);
-    printf("%02x", lsb);
-    if (lsb != (record.address & 0xFF)) {
-      fprintf(stderr, "bad address lsb: expected %02x, got %02x\n", record.address & 0xFF, lsb);
-      exit(1);
-    }
+    printf("%04x", record.address);
 
     printf("%02x", record.type);
 

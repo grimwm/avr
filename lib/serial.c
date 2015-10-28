@@ -46,9 +46,6 @@ int SerialOptions_open(const SerialOptions* opts) {
   struct termios termopts;
   memset(&termopts, 0, sizeof(struct termios));
 
-  /* Translate NL to CR on input. */
-  termopts.c_iflag |= INLCR;
-
   /* Enable local line (no owner change) and enable receiver. */
   termopts.c_cflag |= CLOCAL | CREAD;
   /* Stop bits default to 1, but set it to 2 if necessary. */
@@ -113,11 +110,13 @@ int SerialOptions_open(const SerialOptions* opts) {
     pabort("Error setting output speed");
   }
 
+  termopts.c_oflag &= ~OPOST;
+
   /*
    * Only send data after 1 chars are in the buffer.
    * Don't use a timer.
    */
-  termopts.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+  termopts.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG | IEXTEN);
   termopts.c_cc[VMIN] = 1;
 
   if (-1 == tcsetattr(fd, TCSAFLUSH, &termopts)) {
@@ -128,33 +127,21 @@ int SerialOptions_open(const SerialOptions* opts) {
 }
 
 void writetty(int fd, const void* data, size_t length) {
-  /* for (size_t i = 0; i < length; ++i) { */
-  /*   while (write(fd, data+i, 1) < 1) { */
-  /*     if (EAGAIN != errno) { */
-  /*       pabort("writing data to tty"); */
-  /*     } */
-  /*     usleep(100*1000); */
-  /*   } */
-  /*   usleep(100*1000); */
-  /* } */
-  /* while (write(fd, data, length) < length) { */
-  /*   if (EAGAIN != errno) { */
-  /*     pabort("writing data to tty"); */
-  /*   } */
-  /* } */
-  if (-1 == write(fd, data, length)) {
-    pabort("wrtiing data to tty");
+  for (size_t i = 0; i < length; ++i) {
+    if (-1 == write(fd, data+i, 1)) {
+      pabort("writing data to tty");
+    }
+    if (-1 == tcdrain(fd)) {
+      pabort("draining tty");
+    }
   }
+  /* if (-1 == write(fd, data, length)) { */
+  /*   pabort("wrtiing data to tty"); */
+  /* } */
 }
 
 uint8_t readtty(int fd) {
   uint8_t b;
-  
-  /* while (read(fd, &b, sizeof(uint8_t)) < 1) { */
-  /*   if (EAGAIN != errno) { */
-  /*     pabort("reading tty"); */
-  /*   } */
-  /* } */
 
   if (-1 == read(fd, &b, sizeof(uint8_t))) {
     pabort("reading tty");

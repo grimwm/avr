@@ -13,15 +13,13 @@
 
 #include <stdio.h>
 #include <avr/io.h>
-#include <util/setbaud.h>
-#include <util/delay.h>
 
 static int uart0_putchar(char c, FILE* stream);
 static FILE mystdout = FDEV_SETUP_STREAM(uart0_putchar, NULL, _FDEV_SETUP_WRITE);
 
 int uart0_putchar(char c, FILE* stream) {
-  if ('\r' == c) {
-    uart0_putchar('\n', stream);
+  if ('\n' == c) {
+    uart0_putchar('\r', stream);
   }
 
   uart0_transmit(c);
@@ -33,8 +31,9 @@ void uart0_setup_stdout() {
 }
 
 void uart0_enable(UARTMode syncMode) {
-  UBRR0H = UBRRH_VALUE;
-  UBRR0L = UBRRL_VALUE;
+  static uint16_t baudrate = ((F_CPU / (16 * BAUD)) - 1);
+  UBRR0H = baudrate >> 8;
+  UBRR0L = baudrate;
 
   (void)UDR0; // clear any data currently in the buffer
 
@@ -56,12 +55,7 @@ void uart0_enable(UARTMode syncMode) {
 }
 
 void uart0_transmit(uint8_t data) {
-  /*
-   * TODO Figure out if ISR will remove need for this delay.
-   * Delay is needed because otherwise data gets corrupted.
-   */
-  _delay_ms(1);
-  while (!(UCSR0A & _BV(UDRE0)));
+  while ((UCSR0A & _BV(UDRE0)) == 0);
   UDR0 = data;
 }
 
@@ -70,11 +64,6 @@ uint8_t uart0_receive_buffer_full(void) {
 }
 
 uint8_t uart0_receive(void) {
-  /*
-   * TODO Figure out if ISR will remove need for this delay.
-   * Delay is needed because otherwise data gets corrupted.
-   */
-  _delay_ms(1);
   while (!(UCSR0A & _BV(RXC0)));
   return UDR0;
 }

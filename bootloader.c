@@ -11,8 +11,8 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#include <avr/wdt.h>
 #include <util/delay.h>
-#include <util/setbaud.h>
 
 #include <stdint.h>
 #include <string.h>
@@ -20,8 +20,6 @@
 #include "uart.h"
 
 static void (*startapp)(void) = 0x0000;
-
-#define TIMEOUT_LOOPS ((F_CPU/1000)*BOOT_TIMEOUT_MS)
 
 #if (SPM_PAGESIZE-1) & SPM_PAGESIZE
 #  error SPM_PAGESIZE must be a power of 2
@@ -59,6 +57,9 @@ static void flash_write_page(uint16_t page_addr) {
 
 int main(void) __attribute__((OS_main)) __attribute__((section(".init9")));
 int main(void) {
+  MCUSR = 0;
+  wdt_disable();
+
   uint8_t sreg = SREG;
   cli();
 
@@ -82,32 +83,33 @@ int main(void) {
   IntelHexRecordHeader ihex = { 0x00, 0x0000 };
   uint16_t page_base_addr = ~0;
 
+  wdt_enable(WDTO_8S);
+
 restart:
   crc = 0;
-  for (uint32_t timeout = 0; timeout < TIMEOUT_LOOPS; ++timeout) {
+  for (;;) {
     if (!uart0_receive_buffer_full()) {
       continue;
     }
-
+    
     uint8_t command = uart0_receive();
 
     switch (command) {
     case 'A': /* Set ihex address. */
       ihex.address = uart0_receive() << 8;
-      ihex.address |= uart0_receive();
-
       crc += ihex.address >> 8;
-      uart0_transmit(ihex.address >> 8);
 
+      ihex.address |= uart0_receive();
       crc += ihex.address & 0xFF;
-      uart0_transmit(ihex.address & 0xFF);
+      
+      uart0_transmit((ihex.address >> 8) + (ihex.address & 0xFF));
 
-      /* timeout = 0; */
+      wdt_reset();
       break;
     case 'L': /* Set data length. */
       crc += ihex.length = uart0_receive();
       uart0_transmit(ihex.length);
-      /* timeout = 0; */
+      wdt_reset();
       break;
     case 'D': /* Write data.  Return CRC. */ {
       uint16_t addr = ihex.address;
@@ -120,12 +122,15 @@ restart:
 
         crc += g_page[PAGE_OFFSET(addr)] = uart0_receive();
         uart0_transmit(g_page[PAGE_OFFSET(addr)]);
+
+        wdt_reset();
       }
       flash_write_page(page_base_addr);
 
       uart0_transmit(~crc + 1);
       crc = 0;
-      /* timeout = 0; */
+
+      wdt_reset();
       break;
     }
     case 'E': /* End upload; start program. */
@@ -142,6 +147,9 @@ startapp:
 
   /* enable the RWW section so that we can jump to it after bootloading. */
   boot_rww_enable_safe();
+
+  MCUSR = 0;
+  wdt_disable();
 
   /* Jump to the application. */
   startapp();
