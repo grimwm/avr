@@ -81,6 +81,9 @@ int SerialOptions_open(const SerialOptions* opts) {
 
   speed_t speed = 0;
   switch (opts->baudrate) {
+  case 2400:
+    speed = B2400;
+    break;
   case 9600:
     speed = B9600;
     break;
