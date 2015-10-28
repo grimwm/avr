@@ -290,11 +290,6 @@ int main(int argc, char* argv[]) {
 
   /* Inform the other end we're finished. */
   writetty(serialfd, &"E", 1);
-  uint8_t ret = readtty(serialfd);
-  if ('S' != ret) {
-    fprintf(stderr, "bad bootloader return, expected S, got %c\n", ret);
-    exit(1);
-  }
   printf("%s uploaded!\n", ihexFilePath);
 
   if (-1 == close(serialfd)) {

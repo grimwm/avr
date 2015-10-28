@@ -129,7 +129,6 @@ restart:
       break;
     }
     case 'E': /* End upload; start program. */
-      uart0_transmit('S');
       goto startapp;
     default:
       uart0_transmit('?');
