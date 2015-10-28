@@ -99,12 +99,6 @@ restart:
       crc += ihex.address >> 8;
       uart0_transmit(ihex.address >> 8);
 
-      /*
-       * TODO Figure out if ISR will remove need for htis delay.
-       * Delay is needed because otherwise data gets corrupted.
-       */
-      _delay_ms(1);
-      
       crc += ihex.address & 0xFF;
       uart0_transmit(ihex.address & 0xFF);
 
@@ -129,7 +123,6 @@ restart:
       }
       flash_write_page(page_base_addr);
 
-      _delay_ms(1); // TODO same note as above
       uart0_transmit(~crc + 1);
       crc = 0;
       /* timeout = 0; */

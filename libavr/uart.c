@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <avr/io.h>
 #include <util/setbaud.h>
+#include <util/delay.h>
 
 static int uart0_putchar(char c, FILE* stream);
 static FILE mystdout = FDEV_SETUP_STREAM(uart0_putchar, NULL, _FDEV_SETUP_WRITE);
@@ -55,6 +56,11 @@ void uart0_enable(UARTMode syncMode) {
 }
 
 void uart0_transmit(uint8_t data) {
+  /*
+   * TODO Figure out if ISR will remove need for this delay.
+   * Delay is needed because otherwise data gets corrupted.
+   */
+  _delay_ms(1);
   while (!(UCSR0A & _BV(UDRE0)));
   UDR0 = data;
 }
@@ -64,6 +70,11 @@ uint8_t uart0_receive_buffer_full(void) {
 }
 
 uint8_t uart0_receive(void) {
+  /*
+   * TODO Figure out if ISR will remove need for this delay.
+   * Delay is needed because otherwise data gets corrupted.
+   */
+  _delay_ms(1);
   while (!(UCSR0A & _BV(RXC0)));
   return UDR0;
 }
