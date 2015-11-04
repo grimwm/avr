@@ -45,16 +45,26 @@ set(
 # 2.7v bod
 set(FUSE -U lfuse:w:0xf7:m -U hfuse:w:0xde:m -U efuse:w:0x00:m)
 
-macro(add_avr_executable target_name srcs)
-  add_executable(${target_name} ${srcs})
-  
+macro(_add_avr_post_build target_name)
   add_custom_command(TARGET ${target_name}
     POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O ihex -R .eeprom ${target_name} ${target_name}.hex)
 
   set_directory_properties(PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
     ${target_name}.hex)
+endmacro(_add_avr_post_build)
+
+macro(add_avr_executable target_name srcs)
+  add_executable(${target_name} ${srcs})
+  set_property(TARGET ${target_name} APPEND PROPERTY
+    COMPILE_DEFINITIONS AVR_UART_ISR_RX_ENABLE)
+  _add_avr_post_build(${target_name})
 endmacro(add_avr_executable)
+
+macro(add_avr_bootloader target_name srcs)
+  add_executable(${target_name} ${srcs})
+  _add_avr_post_build(${target_name})
+endmacro(add_avr_bootloader)
 
 macro(add_avr_install_target target_name)
   add_custom_target(install_${target_name}

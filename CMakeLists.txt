@@ -22,12 +22,12 @@ if(AVR)
 
   add_avr_fuse_target()
 
-  add_avr_executable(bootloader bootloader.c)
+  add_avr_bootloader(bootloader bootloader.c)
   set_property(TARGET bootloader APPEND PROPERTY
     COMPILE_DEFINITIONS BOOT_TIMEOUT_MS=10000)
   set_target_properties(bootloader PROPERTIES LINK_FLAGS
     -Wl,--section-start=.text=${BOOTSTARTB})
-  target_link_libraries(bootloader io)
+  target_link_libraries(bootloader io-noint)
   add_avr_install_target(bootloader)
 
   add_avr_executable(servo servo.c)
