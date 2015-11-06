@@ -42,17 +42,24 @@
 #define UPE0 UPE
 #endif
 
+#if AVR_UART_ISR_RX_ENABLE || AVR_UART_ISR_TX_ENABLE
+#define UART_BUFFER_SIZE        64
+#define UART_BUFFER_OFFSET(i)   ((UART_BUFFER_SIZE-1) & (i))
+typedef struct {
+  char buffer[UART_BUFFER_SIZE];
+  uint8_t head, tail;
+  uint8_t nitems;
+} RingBuffer;
+#endif // AVR_UART_ISR_RX_ENABLE || AVR_UART_ISR_TX_ENABLE
+
 #ifdef AVR_UART_ISR_RX_ENABLE
 #include <avr/interrupt.h>
-#define RX_BUFFER_SIZE        64
-#define RX_BUFFER_OFFSET(i)   ((RX_BUFFER_SIZE-1) & (i))
-typedef struct {
-  char buffer[RX_BUFFER_SIZE];
-  uint8_t head, tail;
-} RingBuffer;
+static RingBuffer g_rx_buffer;
+#endif
 
-static RingBuffer rx_buffer;
-#endif // AVR_UART_ISR_RX_ENABLE
+#ifdef AVR_UART_ISR_TX_ENABLE
+static RingBuffer g_tx_buffer;
+#endif
 
 static int uart0_putchar(char c, FILE* stream);
 static FILE mystdout = FDEV_SETUP_STREAM(uart0_putchar, NULL, _FDEV_SETUP_WRITE);
@@ -107,25 +114,27 @@ void uart0_transmit(uint8_t data) {
 ISR(USART_RX_vect) {
 }
 
-uint8_t uart0_receive(uint8_t* bad_parity) {
-  while (rx_buffer.head == rx_buffer.tail); // no data available
+uint8_t uart0_receive(void) {
+  while (0 == g_rx_buffer.nitems); // no data available
 
-  uint8_t result = rx_buffer.head;
-  rx_buffer.head = RX_BUFFER_OFFSET(rx_buffer.head+1);
+  uint8_t result = g_rx_buffer.head;
+  g_rx_buffer.head = UART_BUFFER_OFFSET(g_rx_buffer.head+1);
   return result;
 }
 #else
-uint8_t uart0_receive(uint8_t* bad_parity) {
+uint8_t uart0_receive(void) {
   while (!(UCSR0A & _BV(RXC0)));
-  if (bad_parity) {
-    *bad_parity = UCSR0A & _BV(UPE0);
-  }
   return UDR0;
 }
 #endif // AVR_UART_ISR_RX_ENABLE
 
+#ifdef AVR_UART_ISR_TX_ENABLE
+ISR (USART0_UDRE_vect) {
+}
+#else
 void uart0_write(uint8_t* data, uint8_t length) {
   for (uint8_t i = 0; i < length; ++i) {
     uart0_transmit(data[i]);
   }
 }
+#endif // AVR_UART_ISR_TX_ENABLE

@@ -57,10 +57,9 @@ uint8_t uart0_receive_buffer_full(void);
 
 /**
  * @brief Receives a character from the UART device.
- * @param bad_parity If not NULL, stores 1 on parity error; 0 otherwise.
  * @return Received character from the UART.
  */
-uint8_t uart0_receive(uint8_t* bad_parity);
+uint8_t uart0_receive(void);
 
 
 #ifdef __cplusplus
