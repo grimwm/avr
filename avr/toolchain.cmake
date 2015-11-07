@@ -22,9 +22,6 @@ set(CXXWARN "-Wall -Werror")
 set(CTUNING "-funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums")
 set(COPT "-Os -mcall-prologues")
 
-# BAUD_TOL is set to a large value because we are going to trust the developer
-# to make a good decision, especially if they're using crystal oscillators
-# or external clocks.
 set(
   CMAKE_C_FLAGS
   "-mmcu=${MCU} -DF_CPU=${F_CPU} -DBAUD=${BAUD} -std=c11 ${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
@@ -32,7 +29,7 @@ set(
 
 set(
   CMAKE_CXX_FLAGS
-  "-mmcu=${MCU} -DF_CPU=${F_CPU} -std=c++11 ${CDEBUG} ${COPT} ${CXXWARN} ${CXXFLAGS}"
+  "-mmcu=${MCU} -DF_CPU=${F_CPU} -DBAUD=${BAUD} -std=c++11 ${CDEBUG} ${COPT} ${CXXWARN} ${CXXFLAGS}"
   CACHE STRING "")# FORCE)
 
 # Internal RC oscillator, default settings.
