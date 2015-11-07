@@ -6,7 +6,7 @@ Project(AVR)
 # but a clever update to the ./configure script can use
 #   echo | gcc -v -x c -E - 2>&1 | grep '^ /.*/include'
 # to turn this into a convenient macro that works across machines
-# and (cross-)compilers.
+# and compilers.
 file(GLOB_RECURSE SYSHEADERS /usr/lib/avr/include/*.h)
 add_custom_target(sysheaders SOURCES ${SYSHEADERS})
 
@@ -22,7 +22,7 @@ if(AVR)
 
   add_avr_fuse_target()
 
-  add_avr_bootloader(bootloader bootloader.c)
+  add_avr_executable(bootloader bootloader.c)
   set_property(TARGET bootloader APPEND PROPERTY
     COMPILE_DEFINITIONS BOOT_TIMEOUT_MS=10000)
   set_target_properties(bootloader PROPERTIES LINK_FLAGS

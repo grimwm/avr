@@ -56,15 +56,8 @@ endmacro(_add_avr_post_build)
 
 macro(add_avr_executable target_name srcs)
   add_executable(${target_name} ${srcs})
-  set_property(TARGET ${target_name} APPEND PROPERTY
-    COMPILE_DEFINITIONS AVR_UART_ISR_RX_ENABLE)
   _add_avr_post_build(${target_name})
 endmacro(add_avr_executable)
-
-macro(add_avr_bootloader target_name srcs)
-  add_executable(${target_name} ${srcs})
-  _add_avr_post_build(${target_name})
-endmacro(add_avr_bootloader)
 
 macro(add_avr_install_target target_name)
   add_custom_target(install_${target_name}
