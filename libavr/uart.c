@@ -17,9 +17,9 @@
 #include <stdio.h>
 
 /*
- * The math for UBBR_1X_ERROR_RATE and UBBR_2X_ERROR_RATE may look a bit odd,
- * but the purpose of is to allow UBBR to get the correct value by "doubling"
- * the addition of 0.5 (e.g. 1.0) by delaying when we multiply a 1/2 out.
+ * The math for UBBR_1X and UBBR_2X may look a bit odd, but the purpose of is
+ * to allow UBBR to get the correct value by "doubling" the addition of
+ * 0.5 (e.g. 1.0) by delaying when we multiply a 1/2 out of the equation.
  * This way, when we divide by 2, we get rounded to the nearest integer.
  */
 #define UBBR_1X ((F_CPU / 8 / BAUD - 1) / 2)
