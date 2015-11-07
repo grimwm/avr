@@ -37,12 +37,28 @@ extern "C" {
 #define UBRR0L UBRRL
 #endif
 
+#ifndef RXC0
+#define RXC0 RXC
+#endif
+
 #ifndef RXCIE0
 #define RXCIE0 RXCIE
 #endif
 
+#ifndef UDRIE0
+#define UDRIE0 UDRIE
+#endif
+
 #ifndef UPE0
 #define UPE0 UPE
+#endif
+
+#ifndef UDR0
+#define UDR0 UDR
+#endif
+
+#ifndef U2X0
+#define U2X0 U2X
 #endif
 
 typedef enum {

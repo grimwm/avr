@@ -115,7 +115,7 @@ uint8_t uart0_receive(void) {
 #endif // AVR_UART_ISR_RX_ENABLE
 
 #ifdef AVR_UART_ISR_TX_ENABLE
-ISR (USART_UDRE_vect) {
+ISR(USART_UDRE_vect) {
   if (0 == g_tx_buffer.nitems) {
     UCSR0B &= ~_BV(UDRIE0); /* clear interrupt flag */
   } else {
@@ -126,7 +126,7 @@ ISR (USART_UDRE_vect) {
 }
 
 void uart0_transmit(uint8_t data) {
-  while (UART_BUFFER_SIZE == g_tx_buffer.nitems);
+  while (UART_BUFFER_SIZE == g_tx_buffer.nitems); /* buffer full */
 
   g_tx_buffer.tail = UART_BUFFER_OFFSET(g_tx_buffer.tail + 1);
   g_tx_buffer.buffer[g_tx_buffer.tail] = data;
@@ -134,7 +134,6 @@ void uart0_transmit(uint8_t data) {
 }
 #else
 void uart0_transmit(uint8_t data) {
-//  while (0 == (UCSR0A & (_BV(UDRE0) | _BV(TXC0))));
   while (0 == (UCSR0A & _BV(UDRE0)));
   UDR0 = data;
 }
