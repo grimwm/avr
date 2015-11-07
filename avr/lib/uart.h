@@ -16,7 +16,34 @@ extern "C" {
 #endif
 
 #include <avr/io.h>
-#include <util/setbaud.h>
+
+#ifndef UCSR0A
+#define UCSR0A UCSRA
+#endif
+
+#ifndef UCSR0B
+#define UCSR0B UCSRB
+#endif
+
+#ifndef UCSR0C
+#define UCSR0C UCSRC
+#endif
+
+#ifndef UBRR0H
+#define UBRR0H UBRRH
+#endif
+
+#ifndef UBRR0L
+#define UBRR0L UBRRL
+#endif
+
+#ifndef RXCIE0
+#define RXCIE0 RXCIE
+#endif
+
+#ifndef UPE0
+#define UPE0 UPE
+#endif
 
 typedef enum {
   UM_Asynchronous,
