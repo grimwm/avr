@@ -11,15 +11,32 @@
  * This is used to setup the UART device on an AVR unit.
  */
 
-#include <stdio.h>
-#include <avr/io.h>
+#include "math.h"
 
-#if BAUD > F_CPU / 16
-#define BAUDBITS ((F_CPU / (8 * BAUD)) - 1)
-#define SET_U2X0() UCSR0A |= _BV(U2X0);
+#include <avr/io.h>
+#include <stdio.h>
+
+/*
+ * The math for UBBR_1X_ERROR_RATE and UBBR_2X_ERROR_RATE may look a bit odd,
+ * but the purpose of is to allow UBBR to get the correct value by "doubling"
+ * the addition of 0.5 (e.g. 1.0) by delaying when we multiply a 1/2 out.
+ * This way, when we divide by 2, we get rounded to the nearest integer.
+ */
+#define UBBR_1X ((F_CPU / 8 / BAUD - 1) / 2)
+#define UBBR_2X ((F_CPU / 4 / BAUD - 1) / 2)
+#define UBBR_1X_ERROR_RATE ABS(0xFF - ((0xFF * F_CPU / (16 * (UBBR_1X + 1))) / BAUD))
+#define UBBR_2X_ERROR_RATE ABS(0xFF - ((0xFF * F_CPU / ( 8 * (UBBR_2X + 1))) / BAUD))
+
+/*
+ * Choose best settings for either the least amount of error or U2X if it's the
+ * only mode that will work with our clock rate.
+ */
+#if BAUD > F_CPU / 16 || UBBR_2X_ERROR_RATE < UBBR_1X_ERROR_RATE
+#define BAUDBITS UBBR_2X
+#define SET_U2X0() UCSR0A |= _BV(U2X0)
 #else
-#define BAUDBITS ((F_CPU / (16 * BAUD)) - 1)
-#define SET_U2X0() UCSR0A &= ~_BV(U2X0);
+#define BAUDBITS UBBR_1X
+#define SET_U2X0() UCSR0A &= ~_BV(U2X0)
 #endif
 
 #if AVR_UART_ISR_RX_ENABLE || AVR_UART_ISR_TX_ENABLE
@@ -64,6 +81,8 @@ void uart0_enable(UARTMode syncMode) {
   UBRR0L = baudrate;
 
   (void)UDR0; // clear any data currently in the buffer
+
+  SET_U2X0();
 
   // Set RX/TN enabled
   UCSR0B |= _BV(TXEN0) | _BV(RXEN0);
