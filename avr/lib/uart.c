@@ -14,6 +14,14 @@
 #include <stdio.h>
 #include <avr/io.h>
 
+#if BAUD > F_CPU / 16
+#define BAUDBITS ((F_CPU / (8 * BAUD)) - 1)
+#define SET_U2X0() UCSR0A |= _BV(U2X0);
+#else
+#define BAUDBITS ((F_CPU / (16 * BAUD)) - 1)
+#define SET_U2X0() UCSR0A &= ~_BV(U2X0);
+#endif
+
 #if AVR_UART_ISR_RX_ENABLE || AVR_UART_ISR_TX_ENABLE
 #include <avr/interrupt.h>
 
