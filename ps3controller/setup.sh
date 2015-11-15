@@ -44,12 +44,12 @@ sudo update-rc.d sixad defaults || exit
 echo -n "Would you like to pair your PS3 controller with this computer (Y/n)? "
 read dopair
 case $dopair in
-  Y|y|"")
-    echo "Running sixpair..."
-    sudo ./sixpair || exit
-    echo -n "Press enter to continue..."
-    read
-    ;;
+    Y|y|"")
+        echo "Running sixpair..."
+        sudo ./sixpair || exit
+        echo -n "Press enter to continue..."
+        read
+        ;;
 esac
 
 echo "Installation complete!"
