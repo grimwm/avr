@@ -2,6 +2,9 @@
 *.pro
 *.user
 
+ps3controller/sixpair*
+ps3controller/QtSixA-*
+
 build*/
 *.hex
 *.pyc

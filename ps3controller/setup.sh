@@ -7,8 +7,8 @@
 
 PACKAGES="bluetooth blueman bluez-utils bluez-compat bluez-hcidump checkinstall libusb-dev libbluetooth-dev joystick"
 
-# sudo apt-get update || exit $?
-# sudo apt-get install -y $PACKAGES || exit $?
+sudo apt-get update || exit $?
+sudo apt-get install -y $PACKAGES || exit $?
 
 if [ ! -f sixpair.c ] ; then
     echo "Fetching sixpair..."
@@ -20,14 +20,9 @@ if [ ! -x sixpair ] ; then
     gcc -o sixpair sixpair.c -lusb || exit
 fi
 
-echo "Running sixpair..."
-sudo ./sixpair || exit
-echo -n "Press enter to continue..."
-read
-
 dpkg -l sixad >/dev/null
 if [ $? -ne 0 ] ; then
-    if [ -f QtSixA-1.5.1-src.tar.gz ] ; then
+    if [ ! -f QtSixA-1.5.1-src.tar.gz ] ; then
         echo "Downloading QtSixA: The Sixaxis Joystick Manager..."
         wget http://sourceforge.net/projects/qtsixa/files/QtSixA%201.5.1/QtSixA-1.5.1-src.tar.gz || exit
         tar xfvz QtSixA-1.5.1-src.tar.gz || exit
@@ -45,5 +40,16 @@ fi
 
 echo "Adding sixad to daemons started at boot..."
 sudo update-rc.d sixad defaults || exit
+
+echo -n "Would you like to pair your PS3 controller with this computer (Y/n)? "
+read dopair
+case $dopair in
+  Y|y|"")
+    echo "Running sixpair..."
+    sudo ./sixpair || exit
+    echo -n "Press enter to continue..."
+    read
+    ;;
+esac
 
 echo "Installation complete!"
