@@ -1,3 +1,3 @@
-sudo apt-get install -y build-essential automake autoconf flex git binutils-avr avr-libc gcc-avr gdb-avr arduino avrdude
+sudo apt-get install -y build-essential automake autoconf flex git binutils-avr avr-libc gcc-avr gdb-avr arduino avrdude gcc-4.8 libjson0-dev
 
 git clone git://git.drogon.net/wiringPi

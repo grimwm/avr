@@ -31,7 +31,7 @@ void uart0_setup_stdout() {
 }
 
 void uart0_enable(UARTMode syncMode) {
-  static uint16_t baudrate = ((F_CPU / (16 * BAUD)) - 1);
+  static uint16_t baudrate = ((F_CPU / 16 / BAUD) - 1);
   UBRR0H = baudrate >> 8;
   UBRR0L = baudrate;
 

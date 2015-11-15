@@ -15,7 +15,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
-#include <limits.h>
+#include <time.h>
+#include <linux/limits.h>
 #include <errno.h>
 #include <getopt.h>
 
@@ -153,7 +154,12 @@ int main(int argc, char* argv[]) {
         }
       }
 
-      usleep(100);
+      struct timespec tv = {0, 100*1000};
+      if (-1 == nanosleep(&tv, NULL)) {
+        if (EINTR != errno) {
+          pabort("Error sleeping");
+        }
+      }
     }
 
     if (EAGAIN != errno) {

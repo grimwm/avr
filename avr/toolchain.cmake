@@ -27,7 +27,7 @@ set(COPT "-Os -mcall-prologues")
 # or external clocks.
 set(
   CMAKE_C_FLAGS
-  "-mmcu=${MCU} -DF_CPU=${F_CPU} -DBAUD=${BAUD} -DBAUD_TOL=100 -std=gnu11 ${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
+  "-mmcu=${MCU} -DF_CPU=${F_CPU} -DBAUD=${BAUD} -std=c11 ${CDEBUG} ${COPT} ${CWARN} ${CFLAGS}"
   CACHE STRING "")# FORCE)
 
 set(

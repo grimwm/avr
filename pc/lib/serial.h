@@ -10,7 +10,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <limits.h>
+#include <linux/limits.h>
 #include <stdlib.h>
 
 #ifdef __cplusplus
