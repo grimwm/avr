@@ -1,16 +1,28 @@
 #!/bin/bash
+# This is intended for use with bluetooth-connected sixad controllers.
+# To be honest, this is a "quick hack" that makes up for some bugs in
+# the bluetooth reset logic when a sixad-compatible controller is
+# disconnected from bluetooth.
 
-JOYSTICK_DEV=/dev/input/js0
+JOYSTICK=/dev/input/js0
+
+if [ -f /etc/sixad-monitor.conf ] ; then
+    . /etc/sixad-monitor.conf
+fi
 
 while : ; do
-    sleep 2
+    while [ ! -f $JOYSTICK ] ; do
+        sleep 2
+    done
 
-    if [ ! -f $JOYSTICK_DEV ] ; then
+    sleep 2
+    if [ ! -f $JOYSTICK ] ; then
+        echo "$JOYSTICK disappeared!  Restarting bluetoothd and sixad..."
         while : ; do
-            echo "$JOYSTICK_DEV disappeared!  Restarting bluetoothd and sixad..."
-            sudo service sixad stop || continue
-            sudo service bluetooth restart || continue
-            sudo service sixad start || continue
+            service sixad stop || continue
+            service bluetooth restart || continue
+            sleep 2 # give some time for the previous service to initialize
+            service sixad start || continue
             break
         done
         echo "bluetoothd and sixad restarted."
