@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <title>AVR by grimwm</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>AVR</h1>
+        <h2>Code related to Atmel&#39;s AVR architecture, including the 3rd party Arduino product..</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/grimwm/avr/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/grimwm/avr/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/grimwm/avr" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a id="avr-toolkit" class="anchor" href="#avr-toolkit" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>AVR Toolkit</h1>
+
+<p>This code supports AVR MCUs utilizing avr-libc by providing additional support
+libraries for the PWMs and other handy hardware features.  It also has some
+included code and scripts for helping getting other devices setup that can
+be used in conjunction with lots of robotic experiments and products,
+such as the PS3 Dual Shock Controller.</p>
+
+<p>It is worth noting that at the moment, items not related directly to the AVR
+are mostly targeted at Raspberry Pi use.  They will work on other machines,
+but some of the scripts may need to be modified.  I hope to change that after
+things solidify more.</p>
+
+<p>Please note that this code is covered by the MPLv2 license, which is quite
+liberal in how you can use it with your own software.  You may find its
+text at <a href="https://www.mozilla.org/en-US/MPL/2.0/">https://www.mozilla.org/en-US/MPL/2.0/</a>.  If you have questions
+about it, the Internet is filled with FAQs, but I chose this license
+mostly for the benefit of everyone involved.</p>
+
+<h2>
+<a id="build-requirements" class="anchor" href="#build-requirements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Build Requirements</h2>
+
+<p>Generally speaking, this project has been tested under Linux.  It is likely
+to work under Windows with some finagling, but it hasn't been a focus of this
+project at this time.  However, we accept pull requests, and we'd love to
+give more people access to this set of tools.</p>
+
+<p>Having said that, assuming you already have your favorite flavor of Linux
+installed, you will need these tools:</p>
+
+<ol>
+<li>cmake</li>
+<li>gcc-avr</li>
+<li>libc-avr</li>
+<li>avrdude</li>
+</ol>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>There are two basic modes for building applications.  The first lets you build
+programs for the AVR, and the second lets you build applications for the PC.</p>
+
+<pre><code>./configure -b &lt;build_dir&gt; avr -mcu &lt;mcu_type&gt; -fcpu &lt;hz&gt;
+OR
+./configure -b &lt;build_dir&gt; default
+
+cd &lt;build_dir&gt;
+make
+</code></pre>
+
+<p>The command for installing programs is specific to each target architecture
+and will be outlined using examples.</p>
+
+<h3>
+<a id="example-avr-code" class="anchor" href="#example-avr-code" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example AVR Code:</h3>
+
+<pre><code># Prepare a build directory for the ATmega88 with a CPU speed of 8 MHz.
+./configure -b build_avr avr -mcu atmega88 -fcpu 8000000
+cd build_avr
+
+# Currently, the cmake files assume you're using linuxgpio (e.g. on the
+# Raspberry Pi) and have set everything up properly in /etc/avrdude.conf.
+# See "Raspberry Pi Setup" for some tips on how to configure avrdude
+# and properly connect your AVR directly to a Raspberry Pi.
+#
+# Then, to install the PWM code, for example:
+make install_pwm
+</code></pre>
+
+<h3>
+<a id="example-pc-code" class="anchor" href="#example-pc-code" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example PC Code:</h3>
+
+<pre><code>./configure -b build_pc default
+cd build_pc
+
+# Then, to build all control modules:
+make
+</code></pre>
+
+<h2>
+<a id="raspberry-pi-setup" class="anchor" href="#raspberry-pi-setup" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Raspberry Pi Setup</h2>
+
+<p>So, you're using a Raspberry Pi (RPi) to communicate with and program your AVR
+chips, are you?  Well, congratulations!  It's a fine little setup, and this
+section of the notes is specifically to guide you through that setup
+process.  This document, however, will only talk about the SPI setup and will
+not cover any specifics on how to power your AVR (hint: the RPi has power and
+ground pins, and you should connect ALL the AVR ground pins up to a common
+ground, btw).  While going through this section, you should refer
+to <a href="http://pi.gadgetoid.com/pinout">http://pi.gadgetoid.com/pinout</a>.</p>
+
+<p>I apologize in advance for not providing any images or diagrams
+just yet.  I just want to get this information out to you in any form
+possible, even in a raw form, so that you might be able to get started.</p>
+
+<p>Firstly, we're going to assume you want to use the GPIO header to program
+your AVR.  You are free to use whatever power source you want, but you have
+to make sure your AVR only sends 3.3v signals back to the RPi.  So, if you
+power the AVR using something other than the 3.3v (e.g. using the 3.3v
+power supply pin on the RPi), please buy a voltage level translator or build
+something yourself.  You do not want "the magic smoke".</p>
+
+<p>Anyway, you will be using the SPI pins on your RPi, which are the MOSI, MISO,
+and SCK pins.  You also need to use one of the digital output pins as your
+~RST signal for the AVR.  You should also connect the RPi's GND to your AVR,
+even if the AVR is connected to another power source, because it will create
+a common ground.</p>
+
+<p>I'm not exactly an EE expert, but I don't think you should encounter any
+ground loops (at least, I didn't, which, extrapolating from a sample size of 1,
+no one in the world should have probelems, haha).</p>
+
+<p>Connect the SCK pins on both the RPi and AVR directly together.  Then,
+connect the MISO on the RPi to the MOSI on the AVR.  Next, quite obviously,
+connect the MOSI on the RPi to the MISO on the AVR.  Finally, connect
+whatever pin you designated as the ~RST signal pin to your AVR's ~RST pin.
+And by the way, it wouldn't hurt to put a pull-up resistor between the AVR's
+~RST pin and Vcc.</p>
+
+<p>Moving on, you're ready to setup <code>/etc/avrdude.conf</code> on your RPi to handle
+data transfers with the SPI.  On my model B, I chose BCM 22, allowing me
+physical pins {15,17,19,21,23,25}, which are located geographically close.
+So, assuming you use BCM 22, this is what your <code>avrdude.conf</code> would look like
+for "linuxgpio":</p>
+
+<pre><code>programmer
+  id    = "linuxgpio";
+  desc  = "Use the Linux sysfs interface to bitbang GPIO lines";
+  type  = "linuxgpio";
+  reset = 22;
+  sck   = 11;
+  mosi  = 10;
+  miso  = 9;
+;
+</code></pre>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
